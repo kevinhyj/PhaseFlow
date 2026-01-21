@@ -1,0 +1,40 @@
+# PhaseFlow Configuration
+
+# Model architecture
+model:
+  dim: 256              # Model dimension
+  depth: 6              # Number of transformer layers
+  heads: 8              # Number of attention heads
+  dim_head: 32          # Dimension per head
+  vocab_size: 64        # Vocabulary size (20 AA + special tokens + shape encoding)
+  phase_dim: 16         # Phase diagram dimension (4x4 grid)
+  max_seq_len: 64       # Maximum sequence length
+  dropout: 0.1          # Dropout rate
+
+# Training settings
+training:
+  batch_size: 64
+  lr: 1e-4              # Learning rate
+  weight_decay: 0.01    # Weight decay for AdamW
+  epochs: 100           # Maximum training epochs
+  warmup_steps: 1000    # Learning rate warmup steps
+  flow_loss_weight: 1.0 # Weight for flow matching loss
+  lm_loss_weight: 1.0   # Weight for language modeling loss
+  max_grad_norm: 1.0    # Gradient clipping norm
+  use_amp: true         # Use automatic mixed precision
+  early_stopping_patience: 10  # Early stopping patience
+  save_every: 10        # Save checkpoint every N epochs
+
+# Sampling/inference settings
+sampling:
+  ode_steps: 20         # ODE integration steps for phase generation
+  temperature: 1.0      # Temperature for sequence sampling
+  top_k: null           # Top-k sampling (null to disable)
+  top_p: null           # Nucleus sampling threshold (null to disable)
+
+# Data settings
+data:
+  train_ratio: 0.9      # Proportion for training
+  val_ratio: 0.05       # Proportion for validation
+  num_workers: 4        # DataLoader workers
+  normalize_phase: true # Normalize phase values
