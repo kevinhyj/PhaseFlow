@@ -234,7 +234,7 @@ def validate(
         # Generate phase diagrams for evaluation
         pred_phase = model.generate_phase(
             input_ids, attention_mask, seq_len,
-            num_steps=config['sampling'].get('ode_steps', 20)
+            method='euler'  # 使用简单的 Euler 进行快速评估
         )
 
         all_pred_phase.append(pred_phase.cpu())
@@ -286,7 +286,7 @@ def main():
                 'dim_head': 32,
                 'vocab_size': 64,
                 'phase_dim': 16,
-                'max_seq_len': 64,
+                'max_seq_len': 32,
                 'dropout': 0.1,
             },
             'training': {
@@ -335,6 +335,15 @@ def main():
     # Save config
     save_config(config, str(output_dir / "config.yaml"))
 
+    # Initialize CUDA context before creating DataLoader
+    # This prevents CUBLAS_STATUS_NOT_INITIALIZED errors
+    if args.device == 'cuda':
+        torch.cuda.init()
+        torch.cuda.set_device(0)
+        # Warm up cuBLAS
+        _ = torch.zeros(1).cuda()
+        logger.info("CUDA context initialized")
+
     # Create tokenizer
     tokenizer = AminoAcidTokenizer()
 
@@ -350,6 +359,8 @@ def main():
         train_ratio=config['data']['train_ratio'],
         val_ratio=config['data']['val_ratio'],
         seed=args.seed,
+        use_npz=True,  # 优先使用NPZ文件快速加载
+        normalize_phase=False,  # 数据已经是[-1,1]范围
     )
 
     val_loader = create_dataloader(
@@ -362,6 +373,8 @@ def main():
         train_ratio=config['data']['train_ratio'],
         val_ratio=config['data']['val_ratio'],
         seed=args.seed,
+        use_npz=True,
+        normalize_phase=False,
     )
 
     logger.info(f"Train samples: {len(train_loader.dataset)}")

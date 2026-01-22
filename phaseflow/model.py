@@ -6,7 +6,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from typing import Optional, Dict, Tuple
+from functools import partial
 from einops import rearrange, repeat
+from torchdiffeq import odeint
 
 from .transformer import Transformer, SinusoidalPosEmb
 from .tokenizer import AminoAcidTokenizer
@@ -33,7 +35,7 @@ class PhaseFlow(nn.Module):
         dim_head: int = 32,
         vocab_size: int = 64,
         phase_dim: int = 16,  # 4x4 grid
-        max_seq_len: int = 64,
+        max_seq_len: int = 32,  # 序列5-20，加特殊token后约25，留余量
         dropout: float = 0.0,
         time_embed_dim: Optional[int] = None,
     ):
@@ -406,51 +408,74 @@ class PhaseFlow(nn.Module):
         input_ids: torch.Tensor,
         attention_mask: torch.Tensor,
         seq_len: torch.Tensor,
-        num_steps: int = 20,
+        method: str = 'dopri5',
+        atol: float = 1e-5,
+        rtol: float = 1e-5,
         return_trajectory: bool = False,
     ) -> torch.Tensor:
         """Generate phase diagram from sequence using ODE integration.
+
+        Uses torchdiffeq for high-quality ODE solving.
 
         Args:
             input_ids: (batch, seq) token IDs
             attention_mask: (batch, seq) attention mask
             seq_len: (batch,) sequence lengths
-            num_steps: Number of ODE integration steps
+            method: ODE solver method ('dopri5', 'euler', 'midpoint', etc.)
+            atol: Absolute tolerance for adaptive methods
+            rtol: Relative tolerance for adaptive methods
             return_trajectory: Whether to return full trajectory
 
         Returns:
             (batch, phase_dim) generated phase diagram
-            or (batch, num_steps+1, phase_dim) if return_trajectory
+            or (batch, T, phase_dim) if return_trajectory (T depends on solver)
         """
         batch = input_ids.shape[0]
         device = input_ids.device
 
-        # Initialize with noise
-        x = torch.randn(batch, self.phase_dim, device=device)
+        # Initialize with noise (t=0)
+        x_init = torch.randn(batch, self.phase_dim, device=device)
+
+        # Define ODE function: dx/dt = velocity(x, t)
+        def ode_func(t, x):
+            """
+            Velocity function for the ODE.
+            Args:
+                t: scalar time value
+                x: (batch, phase_dim) current state
+            Returns:
+                v: (batch, phase_dim) velocity
+            """
+            # t is a scalar, broadcast to batch
+            t_batch = torch.full((batch,), t.item() if t.dim() == 0 else t, device=device)
+            # Predict velocity field
+            v = self.forward_flow(input_ids, attention_mask, x, t_batch, seq_len)
+            return v
+
+        # Time grid from t=0 to t=1
+        if return_trajectory:
+            # More time points for visualization
+            t_span = torch.linspace(0.0, 1.0, 50, device=device)
+        else:
+            # Just start and end
+            t_span = torch.tensor([0.0, 1.0], device=device)
+
+        # Solve ODE using torchdiffeq
+        trajectory = odeint(
+            ode_func,
+            x_init,
+            t_span,
+            method=method,
+            atol=atol,
+            rtol=rtol,
+        )
 
         if return_trajectory:
-            trajectory = [x.clone()]
-
-        # Euler integration from t=0 to t=1
-        dt = 1.0 / num_steps
-        times = torch.linspace(0, 1 - dt, num_steps, device=device)
-
-        for t_val in times:
-            t = torch.full((batch,), t_val, device=device)
-
-            # Predict velocity
-            v = self.forward_flow(input_ids, attention_mask, x, t, seq_len)
-
-            # Euler step
-            x = x + v * dt
-
-            if return_trajectory:
-                trajectory.append(x.clone())
-
-        if return_trajectory:
-            return torch.stack(trajectory, dim=1)
-
-        return x
+            # trajectory shape: (T, batch, phase_dim) -> (batch, T, phase_dim)
+            return trajectory.permute(1, 0, 2)
+        else:
+            # Return final state only
+            return trajectory[-1]
 
     @torch.no_grad()
     def generate_sequence(

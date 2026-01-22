@@ -39,7 +39,7 @@ def predict_phase_diagram(
     tokenizer: AminoAcidTokenizer,
     sequence: str,
     device: str = 'cuda',
-    num_steps: int = 20,
+    method: str = 'euler',  # 'euler', 'dopri5', 'midpoint'
 ) -> np.ndarray:
     """
     Predict phase diagram from amino acid sequence.
@@ -49,7 +49,7 @@ def predict_phase_diagram(
         tokenizer: AminoAcidTokenizer
         sequence: Amino acid sequence string
         device: Device to run on
-        num_steps: ODE integration steps
+        method: ODE solver method ('euler', 'dopri5', 'midpoint')
 
     Returns:
         (16,) array of phase diagram values
@@ -72,7 +72,7 @@ def predict_phase_diagram(
             input_ids,
             attention_mask,
             seq_len,
-            num_steps=num_steps
+            method=method
         )
 
     return phase.cpu().numpy()[0]
@@ -150,7 +150,7 @@ def main():
     print(f"Input sequence: {test_sequence}")
 
     phase = predict_phase_diagram(
-        model, tokenizer, test_sequence, device, num_steps=20
+        model, tokenizer, test_sequence, device, method='euler'
     )
 
     print(f"\nPredicted phase diagram (4x4):")

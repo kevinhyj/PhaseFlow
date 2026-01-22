@@ -61,10 +61,11 @@ def parse_args():
         help="Output file path"
     )
     parser.add_argument(
-        "--num_steps",
-        type=int,
-        default=20,
-        help="Number of ODE integration steps"
+        "--method",
+        type=str,
+        default='euler',
+        choices=['euler', 'dopri5', 'midpoint', 'rk4'],
+        help="ODE solver method for phase generation"
     )
     parser.add_argument(
         "--temperature",
@@ -160,7 +161,7 @@ def generate_phase_from_sequences(
     model: PhaseFlow,
     tokenizer: AminoAcidTokenizer,
     sequences: List[str],
-    num_steps: int = 20,
+    method: str = 'euler',
     batch_size: int = 32,
     device: str = 'cuda',
     max_seq_len: int = 64,
@@ -171,7 +172,7 @@ def generate_phase_from_sequences(
         model: PhaseFlow model
         tokenizer: Tokenizer
         sequences: List of amino acid sequences
-        num_steps: ODE integration steps
+        method: ODE solver method ('euler', 'dopri5', 'midpoint', 'rk4')
         batch_size: Batch size
         device: Device
         max_seq_len: Maximum sequence length
@@ -201,7 +202,7 @@ def generate_phase_from_sequences(
         # Generate phase diagrams
         phase = model.generate_phase(
             input_ids, attention_mask, seq_lens,
-            num_steps=num_steps
+            method=method
         )
 
         all_phases.append(phase.cpu().numpy())
@@ -300,7 +301,7 @@ def interactive_mode(model, tokenizer, config, device, args):
             # Generate
             phases = generate_phase_from_sequences(
                 model, tokenizer, [sequence],
-                num_steps=args.num_steps,
+                method=args.method,
                 device=device,
                 max_seq_len=max_seq_len,
             )
@@ -369,7 +370,7 @@ def main():
         print(f"Generating phase diagrams for {len(sequences)} sequences...")
         phases = generate_phase_from_sequences(
             model, tokenizer, sequences,
-            num_steps=args.num_steps,
+            method=args.method,
             batch_size=args.batch_size,
             device=args.device,
             max_seq_len=max_seq_len,

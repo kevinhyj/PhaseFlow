@@ -6,9 +6,9 @@ model:
   depth: 6              # Number of transformer layers
   heads: 8              # Number of attention heads
   dim_head: 32          # Dimension per head
-  vocab_size: 64        # Vocabulary size (20 AA + special tokens + shape encoding)
+  vocab_size: 32        # Vocabulary size (20 AA + 6 special + 6 shape)
   phase_dim: 16         # Phase diagram dimension (4x4 grid)
-  max_seq_len: 64       # Maximum sequence length
+  max_seq_len: 32       # Maximum sequence length (实际序列5-20，留余量)
   dropout: 0.1          # Dropout rate
 
 # Training settings
@@ -23,11 +23,11 @@ training:
   max_grad_norm: 1.0    # Gradient clipping norm
   use_amp: true         # Use automatic mixed precision
   early_stopping_patience: 10  # Early stopping patience
-  save_every: 10        # Save checkpoint every N epochs
+  save_every: 20        # Save checkpoint every N epochs
 
 # Sampling/inference settings
 sampling:
-  ode_steps: 20         # ODE integration steps for phase generation
+  method: euler          # ODE solver method: euler, dopri5, midpoint, rk4
   temperature: 1.0      # Temperature for sequence sampling
   top_k: null           # Top-k sampling (null to disable)
   top_p: null           # Nucleus sampling threshold (null to disable)
@@ -36,5 +36,5 @@ sampling:
 data:
   train_ratio: 0.9      # Proportion for training
   val_ratio: 0.05       # Proportion for validation
-  num_workers: 4        # DataLoader workers
+  num_workers: 4        # DataLoader workers (parallel data loading)
   normalize_phase: true # Normalize phase values

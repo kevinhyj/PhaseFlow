@@ -125,15 +125,15 @@ class Attention(nn.Module):
         k = self.k_proj(x)
         v = self.v_proj(x)
 
-        # Reshape for multi-head attention
+        # Reshape for multi-head attention: (b, n, h*d) -> (b, h, n, d)
         q = rearrange(q, 'b n (h d) -> b h n d', h=self.heads)
         k = rearrange(k, 'b n (h d) -> b h n d', h=self.heads)
         v = rearrange(v, 'b n (h d) -> b h n d', h=self.heads)
 
-        # Apply rotary embeddings using the library
-        # rotary_embedding_torch expects shape (batch, heads, seq, dim)
-        q = apply_rotary_emb(rotary_emb, q)
-        k = apply_rotary_emb(rotary_emb, k)
+        # Use the library's rotate_queries_or_keys method
+        # This handles the rotary embedding correctly for multi-head attention
+        q = rotary_emb.rotate_queries_or_keys(q)
+        k = rotary_emb.rotate_queries_or_keys(k)
 
         # Compute attention scores
         scores = torch.einsum('bhid,bhjd->bhij', q, k) * self.scale
@@ -275,8 +275,15 @@ class Transformer(nn.Module):
         self.depth = depth
         self.max_seq_len = max_seq_len
 
-        # Rotary embeddings
-        self.rotary = RotaryEmbedding(dim_head)
+        # Rotary embeddings (from rotary_embedding_torch)
+        # dim_head: dimension per head
+        # theta: base for computing rotary frequencies (default 10000)
+        # use_xpos: use extended rotary positional embeddings (default True for better extrapolation)
+        self.rotary = RotaryEmbedding(
+            dim=dim_head,
+            theta=10000.0,
+            use_xpos=False,  # Disable xpos for simplicity
+        )
 
         # Transformer blocks
         self.layers = nn.ModuleList([

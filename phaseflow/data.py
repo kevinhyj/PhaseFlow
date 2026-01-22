@@ -1,5 +1,11 @@
 """
 Dataset and DataLoader for PhaseFlow.
+
+数据格式说明:
+- CSV: AminoAcidSequence + 16列 (group_11 到 group_44)
+- NPZ: 预处理的 (N, 16) float32 数组
+- 序列长度: 5-20 氨基酸
+- 缺失值: ~62.6%, 用 NaN 表示
 """
 
 import pandas as pd
@@ -25,38 +31,61 @@ class PhaseDataset(Dataset):
 
     def __init__(
         self,
-        csv_path: str,
+        data_path: str,
         tokenizer: Optional[AminoAcidTokenizer] = None,
-        max_seq_len: int = 30,
+        max_seq_len: int = 32,  # 序列长度5-20，加上特殊token后约25，留余量
         split: str = 'train',
         train_ratio: float = 0.9,
         val_ratio: float = 0.05,
         seed: int = 42,
-        normalize_phase: bool = True
+        normalize_phase: bool = False,  # 数据已经在[-1, 1]范围，通常不需要再归一化
+        use_npz: bool = True,  # 优先使用预处理的NPZ文件
     ):
         """Initialize the dataset.
 
         Args:
-            csv_path: Path to phase_diagram.csv
+            data_path: Path to phase_diagram.csv or phase_diagram.npz
             tokenizer: AminoAcidTokenizer instance (creates one if None)
-            max_seq_len: Maximum sequence length
+            max_seq_len: Maximum sequence length (default 32 for seq 5-20 + tokens)
             split: One of 'train', 'val', 'test'
             train_ratio: Proportion of data for training
             val_ratio: Proportion of data for validation
             seed: Random seed for splitting
-            normalize_phase: Whether to normalize phase values to [-1, 1]
+            normalize_phase: Whether to normalize phase values
+            use_npz: Whether to use NPZ file for faster loading
         """
-        self.csv_path = Path(csv_path)
+        self.data_path = Path(data_path)
         self.tokenizer = tokenizer or AminoAcidTokenizer()
         self.max_seq_len = max_seq_len
         self.normalize_phase = normalize_phase
 
-        # Load data
-        self.df = pd.read_csv(csv_path)
+        # 尝试加载 NPZ 文件（更快）
+        npz_path = self.data_path.parent / 'phase_diagram.npz'
+        csv_path = self.data_path.parent / 'phase_diagram.csv'
 
-        # Split data
+        if use_npz and npz_path.exists():
+            print(f"Loading from NPZ: {npz_path}")
+            npz_data = np.load(npz_path)
+            self.phase_data = npz_data['data']  # (N, 16)
+            # NPZ 中 NaN 表示缺失值
+            self.phase_mask = ~np.isnan(self.phase_data)  # True = valid
+            # 将 NaN 替换为 0（占位符）
+            self.phase_data = np.nan_to_num(self.phase_data, nan=0.0)
+            # 仍需从 CSV 读取序列
+            df = pd.read_csv(csv_path)
+            self.sequences = df['AminoAcidSequence'].values
+        else:
+            print(f"Loading from CSV: {csv_path}")
+            df = pd.read_csv(csv_path)
+            self.sequences = df['AminoAcidSequence'].values
+            # 从 CSV 提取相图数据
+            self.phase_data = df[self.PHASE_COLUMNS].values.astype(np.float32)
+            self.phase_mask = ~np.isnan(self.phase_data)
+            self.phase_data = np.nan_to_num(self.phase_data, nan=0.0)
+
+        # 数据集划分
         np.random.seed(seed)
-        n = len(self.df)
+        n = len(self.sequences)
         indices = np.random.permutation(n)
 
         train_end = int(n * train_ratio)
@@ -71,17 +100,20 @@ class PhaseDataset(Dataset):
         else:
             raise ValueError(f"Unknown split: {split}")
 
-        # Precompute statistics for normalization
+        # 计算归一化统计量（如果需要）
         if normalize_phase:
-            phase_data = self.df[self.PHASE_COLUMNS].values
-            self.phase_mean = np.nanmean(phase_data)
-            self.phase_std = np.nanstd(phase_data)
-            # Clamp std to avoid division by zero
+            valid_values = self.phase_data[self.phase_mask]
+            self.phase_mean = valid_values.mean()
+            self.phase_std = valid_values.std()
             if self.phase_std < 1e-6:
                 self.phase_std = 1.0
         else:
             self.phase_mean = 0.0
             self.phase_std = 1.0
+
+        print(f"Dataset loaded: {len(self.indices)} samples ({split})")
+        print(f"  Sequence length range: {min(len(s) for s in self.sequences)}-{max(len(s) for s in self.sequences)}")
+        print(f"  Missing value ratio: {(~self.phase_mask).sum() / self.phase_mask.size:.1%}")
 
     def __len__(self) -> int:
         return len(self.indices)
@@ -95,12 +127,12 @@ class PhaseDataset(Dataset):
             - phase_mask: Binary mask (1 = valid, 0 = missing)
             - attention_mask: Attention mask for sequence
             - seq_len: Original sequence length
+            - sequence: Original sequence string (for debugging)
         """
         row_idx = self.indices[idx]
-        row = self.df.iloc[row_idx]
 
         # Get amino acid sequence
-        sequence = row['AminoAcidSequence']
+        sequence = self.sequences[row_idx]
 
         # Encode sequence
         tokens = self.tokenizer.build_input_sequence(sequence)
@@ -114,23 +146,11 @@ class PhaseDataset(Dataset):
         attention_mask = torch.zeros(self.max_seq_len, dtype=torch.long)
         attention_mask[:seq_len] = 1
 
-        # Get phase diagram values
-        phase_values = []
-        phase_mask = []
+        # Get phase diagram values (already preprocessed)
+        phase_values = self.phase_data[row_idx].copy()  # (16,)
+        phase_mask = self.phase_mask[row_idx].astype(np.float32)  # (16,)
 
-        for col in self.PHASE_COLUMNS:
-            val = row[col]
-            if pd.isna(val) or val == '':
-                phase_values.append(0.0)  # Placeholder
-                phase_mask.append(0)
-            else:
-                phase_values.append(float(val))
-                phase_mask.append(1)
-
-        phase_values = np.array(phase_values, dtype=np.float32)
-        phase_mask = np.array(phase_mask, dtype=np.float32)
-
-        # Normalize phase values
+        # Normalize phase values if needed
         if self.normalize_phase:
             # Only normalize valid values
             valid_idx = phase_mask == 1
@@ -138,8 +158,8 @@ class PhaseDataset(Dataset):
 
         return {
             'input_ids': input_ids,
-            'phase_values': torch.tensor(phase_values, dtype=torch.float32),
-            'phase_mask': torch.tensor(phase_mask, dtype=torch.float32),
+            'phase_values': torch.from_numpy(phase_values),
+            'phase_mask': torch.from_numpy(phase_mask),
             'attention_mask': attention_mask,
             'seq_len': torch.tensor(seq_len, dtype=torch.long),
             'sequence': sequence  # Keep original for debugging
@@ -175,7 +195,7 @@ def collate_fn(batch: List[Dict]) -> Dict[str, torch.Tensor]:
 
 
 def create_dataloader(
-    csv_path: str,
+    data_path: str,
     batch_size: int = 64,
     split: str = 'train',
     num_workers: int = 4,
@@ -185,17 +205,20 @@ def create_dataloader(
     """Create a DataLoader for the phase dataset.
 
     Args:
-        csv_path: Path to phase_diagram.csv
+        data_path: Path to phase_diagram.csv or phase_diagram.npz
         batch_size: Batch size
         split: One of 'train', 'val', 'test'
         num_workers: Number of data loading workers
         shuffle: Whether to shuffle (default: True for train)
         **dataset_kwargs: Additional arguments for PhaseDataset
+            - max_seq_len: Maximum sequence length (default 32)
+            - normalize_phase: Whether to normalize (default False)
+            - use_npz: Use NPZ for faster loading (default True)
 
     Returns:
         DataLoader instance
     """
-    dataset = PhaseDataset(csv_path, split=split, **dataset_kwargs)
+    dataset = PhaseDataset(data_path, split=split, **dataset_kwargs)
 
     if shuffle is None:
         shuffle = (split == 'train')
@@ -206,7 +229,7 @@ def create_dataloader(
         shuffle=shuffle,
         num_workers=num_workers,
         collate_fn=collate_fn,
-        pin_memory=True,
+        pin_memory=True,  # Enable for faster CPU->GPU transfer
         drop_last=(split == 'train')
     )
 

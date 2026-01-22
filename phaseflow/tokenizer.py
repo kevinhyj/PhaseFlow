@@ -20,8 +20,8 @@ class AminoAcidTokenizer:
     SOM_ID = 24    # Start of modality (phase diagram)
     EOM_ID = 25    # End of modality
 
-    # Vocabulary size (20 AA + 6 special + extra for shape encoding)
-    VOCAB_SIZE = 64  # Extra space for shape info characters
+    # Vocabulary size (20 AA + 6 special + 6 shape)
+    VOCAB_SIZE = 32  # Supports shape dimensions 0-5
 
     def __init__(self):
         # Build amino acid to ID mapping
@@ -82,13 +82,22 @@ class AminoAcidTokenizer:
     def encode_shape_info(self, shape: str) -> List[int]:
         """Encode shape information (e.g., '4x4') to token IDs.
 
+        Only encodes the dimensions (rows, cols), ignoring separator 'x'.
+        E.g., "4x4" -> [30, 30], "8x16" -> [34, 42]
+
         Args:
-            shape: Shape string like '4x4'
+            shape: Shape string like '4x4' or '8x16'
 
         Returns:
-            List of token IDs
+            List of token IDs representing [rows, cols]
         """
-        return [ord(c) - ord('0') + self.shape_offset for c in shape]
+        # Parse "NxM" format
+        parts = shape.lower().split('x')
+        tokens = []
+        for part in parts:
+            if part.isdigit():
+                tokens.append(int(part) + self.shape_offset)
+        return tokens
 
     def build_input_sequence(self,
                              amino_seq: str,

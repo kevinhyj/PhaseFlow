@@ -71,7 +71,7 @@ with torch.no_grad():
         input_ids,
         attention_mask,
         seq_lens,
-        num_steps=10
+        method='euler',  # 使用简单的 Euler 方法进行测试
     )
 print(f"   Generated phase shape: {pred_phase.shape}")
 print(f"   Phase values range: [{pred_phase.min():.3f}, {pred_phase.max():.3f}]")
