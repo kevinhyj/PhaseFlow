@@ -105,7 +105,7 @@ class AminoAcidTokenizer:
                              add_special_tokens: bool = True) -> List[int]:
         """Build full input sequence with special tokens.
 
-        Format: [SOS] [amino tokens] [META] [shape] [SOM] ... [EOM] [EOS]
+        Format: [SOS] [amino tokens] [EOS] [META] [shape] [SOM] ... [EOM]
 
         Args:
             amino_seq: Amino acid sequence
@@ -122,6 +122,10 @@ class AminoAcidTokenizer:
 
         # Add amino acid tokens
         tokens.extend(self.encode_sequence(amino_seq))
+
+        # Add EOS token after amino acid sequence
+        if add_special_tokens:
+            tokens.append(self.EOS_ID)
 
         # Add metadata separator and shape info
         tokens.append(self.META_ID)

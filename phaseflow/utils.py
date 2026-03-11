@@ -12,6 +12,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import yaml
+from scipy import stats
 
 
 def set_seed(seed: int = 42):
@@ -310,10 +311,16 @@ def compute_metrics(
             'mse': float('nan'),
             'mae': float('nan'),
             'rmse': float('nan'),
+            'pearson': float('nan'),
+            'spearman': float('nan'),
         }
 
     pred_valid = pred_phase[valid]
     target_valid = target_phase[valid]
+
+    # Convert to numpy for correlation calculation
+    pred_np = pred_valid.detach().cpu().numpy()
+    target_np = target_valid.detach().cpu().numpy()
 
     # MSE
     mse = ((pred_valid - target_valid) ** 2).mean().item()
@@ -324,10 +331,24 @@ def compute_metrics(
     # RMSE
     rmse = np.sqrt(mse)
 
+    # Pearson correlation
+    if len(pred_np) > 1:
+        pearson_r, _ = stats.pearsonr(pred_np, target_np)
+    else:
+        pearson_r = float('nan')
+
+    # Spearman correlation
+    if len(pred_np) > 1:
+        spearman_r, _ = stats.spearmanr(pred_np, target_np)
+    else:
+        spearman_r = float('nan')
+
     return {
         'mse': mse,
         'mae': mae,
         'rmse': rmse,
+        'pearson': pearson_r,
+        'spearman': spearman_r,
     }
 
 

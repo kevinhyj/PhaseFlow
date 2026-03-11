@@ -40,6 +40,7 @@ class PhaseDataset(Dataset):
         seed: int = 42,
         normalize_phase: bool = False,  # 数据已经在[-1, 1]范围，通常不需要再归一化
         use_npz: bool = True,  # 优先使用预处理的NPZ文件
+        missing_threshold: int = -1,  # 按缺失值划分阈值，-1表示不使用
     ):
         """Initialize the dataset.
 
@@ -53,15 +54,111 @@ class PhaseDataset(Dataset):
             seed: Random seed for splitting
             normalize_phase: Whether to normalize phase values
             use_npz: Whether to use NPZ file for faster loading
+            missing_threshold: Threshold for missing value split
+                - If >= 0: train uses missing_0 to missing_{threshold}, val/test uses missing_{threshold+1} to missing_15
+                - If -1: use random split from single file
         """
         self.data_path = Path(data_path)
         self.tokenizer = tokenizer or AminoAcidTokenizer()
         self.max_seq_len = max_seq_len
         self.normalize_phase = normalize_phase
+        self.missing_threshold = missing_threshold
+
+        # 按缺失值划分模式
+        if missing_threshold >= 0:
+            self._init_by_missing(split, seed, missing_threshold)
+        else:
+            self._init_by_random_split(seed, train_ratio, val_ratio, use_npz, split)
+
+        # 计算归一化统计量（如果需要）
+        if normalize_phase:
+            valid_values = self.phase_data[self.phase_mask]
+            self.phase_mean = valid_values.mean()
+            self.phase_std = valid_values.std()
+            if self.phase_std < 1e-6:
+                self.phase_std = 1.0
+        else:
+            self.phase_mean = 0.0
+            self.phase_std = 1.0
+
+        print(f"Dataset loaded: {len(self.indices)} samples ({split})")
+        print(f"  Sequence length range: {min(len(s) for s in self.sequences)}-{max(len(s) for s in self.sequences)}")
+        print(f"  Missing value ratio: {(~self.phase_mask).sum() / self.phase_mask.size:.1%}")
+
+    def _init_by_missing(self, split: str, seed: int, threshold: int):
+        """Initialize by missing value threshold split.
+
+        Only use data with missing count <= threshold.
+        Then split all remaining data into train/val/test (0.9/0.05/0.05).
+
+        Args:
+            split: One of 'train', 'val', 'test'
+            seed: Random seed for shuffling
+            threshold: Only use data with missing count <= threshold
+        """
+        # If data_path is a file (phase_diagram.csv), use its parent directory
+        if self.data_path.is_file():
+            base_dir = self.data_path.parent
+        else:
+            base_dir = self.data_path
+        by_missing_dir = base_dir / 'by_missing'
+
+        # Load all data with missing count <= threshold
+        print(f"Loading data with missing <= {threshold}:")
+        all_sequences = []
+        all_phase_data = []
+        all_phase_mask = []
+
+        for i in range(0, threshold + 1):
+            csv_path = by_missing_dir / f'missing_{i}.csv'
+            if csv_path.exists():
+                df = pd.read_csv(csv_path)
+                all_sequences.append(df['AminoAcidSequence'].values)
+                phase_data = df[self.PHASE_COLUMNS].values.astype(np.float32)
+                phase_mask = ~np.isnan(phase_data)
+                phase_data = np.nan_to_num(phase_data, nan=0.0)
+                all_phase_data.append(phase_data)
+                all_phase_mask.append(phase_mask)
+                print(f"  loaded missing_{i}.csv: {len(df)} samples")
+
+        if not all_sequences:
+            raise ValueError(f"No data found for missing 0 to {threshold}")
+
+        # Merge all data
+        self.sequences = np.concatenate(all_sequences)
+        self.phase_data = np.concatenate(all_phase_data)
+        self.phase_mask = np.concatenate(all_phase_mask)
+
+        # Random shuffle
+        np.random.seed(seed)
+        n = len(self.sequences)
+        indices = np.random.permutation(n)
+
+        # Split into train/val/test (0.9/0.05/0.05)
+        train_end = int(n * 0.9)
+        val_end = int(n * 0.95)
+
+        if split == 'train':
+            self.indices = indices[:train_end]
+        elif split == 'val':
+            self.indices = indices[train_end:val_end]
+        elif split == 'test':
+            self.indices = indices[val_end:]
+        elif split == 'all':
+            self.indices = indices  # Use all data
+        else:
+            raise ValueError(f"Unknown split: {split}")
+
+        print(f"  Total available: {n}")
+        print(f"  {split.capitalize()} samples: {len(self.indices)}")
+
+    def _init_by_random_split(self, seed: int, train_ratio: float, val_ratio: float, use_npz: bool, split: str):
+        """Initialize by random split (original behavior)."""
+        self.use_npz = use_npz  # Store for potential later use
 
         # 尝试加载 NPZ 文件（更快）
         npz_path = self.data_path.parent / 'phase_diagram.npz'
-        csv_path = self.data_path.parent / 'phase_diagram.csv'
+        csv_path = self.data_path  # 使用传入的 data_path
 
         if use_npz and npz_path.exists():
             print(f"Loading from NPZ: {npz_path}")
@@ -97,23 +194,10 @@ class PhaseDataset(Dataset):
             self.indices = indices[train_end:val_end]
         elif split == 'test':
             self.indices = indices[val_end:]
+        elif split == 'all':
+            self.indices = indices  # Use all data
         else:
             raise ValueError(f"Unknown split: {split}")
-
-        # 计算归一化统计量（如果需要）
-        if normalize_phase:
-            valid_values = self.phase_data[self.phase_mask]
-            self.phase_mean = valid_values.mean()
-            self.phase_std = valid_values.std()
-            if self.phase_std < 1e-6:
-                self.phase_std = 1.0
-        else:
-            self.phase_mean = 0.0
-            self.phase_std = 1.0
-
-        print(f"Dataset loaded: {len(self.indices)} samples ({split})")
-        print(f"  Sequence length range: {min(len(s) for s in self.sequences)}-{max(len(s) for s in self.sequences)}")
-        print(f"  Missing value ratio: {(~self.phase_mask).sum() / self.phase_mask.size:.1%}")
 
     def __len__(self) -> int:
         return len(self.indices)
@@ -125,7 +209,6 @@ class PhaseDataset(Dataset):
             - input_ids: Token IDs for amino sequence
             - phase_values: 16-dim phase diagram vector
             - phase_mask: Binary mask (1 = valid, 0 = missing)
-            - attention_mask: Attention mask for sequence
             - seq_len: Original sequence length
             - sequence: Original sequence string (for debugging)
         """
@@ -179,7 +262,6 @@ def collate_fn(batch: List[Dict]) -> Dict[str, torch.Tensor]:
 
     Handles variable-length sequences and string fields.
     """
-    # Stack tensor fields
     result = {
         'input_ids': torch.stack([b['input_ids'] for b in batch]),
         'phase_values': torch.stack([b['phase_values'] for b in batch]),
@@ -214,6 +296,8 @@ def create_dataloader(
             - max_seq_len: Maximum sequence length (default 32)
             - normalize_phase: Whether to normalize (default False)
             - use_npz: Use NPZ for faster loading (default True)
+            - use_missing_split: Split by missing values (default False)
+                - True: train from missing_0.csv, val/test from missing_1-15.csv
 
     Returns:
         DataLoader instance

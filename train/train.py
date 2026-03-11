@@ -4,6 +4,7 @@ Training script for PhaseFlow.
 
 import os
 import argparse
+import json
 from pathlib import Path
 from datetime import datetime
 
@@ -12,6 +13,9 @@ import torch.nn as nn
 from torch.optim import AdamW
 from torch.cuda.amp import GradScaler, autocast
 from tqdm import tqdm
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')  # Non-interactive backend for server
 
 from phaseflow import PhaseFlow, AminoAcidTokenizer, PhaseDataset
 from phaseflow.data import create_dataloader, collate_fn
@@ -32,6 +36,146 @@ from phaseflow.utils import (
 )
 
 
+def plot_training_curves(history: dict, save_dir: Path):
+    """Plot and save training curves.
+
+    Args:
+        history: Dictionary containing training history
+        save_dir: Directory to save plots
+    """
+    save_dir.mkdir(parents=True, exist_ok=True)
+    epochs = range(1, len(history['train_loss']) + 1)
+
+    # Set style
+    plt.style.use('seaborn-v0_8-whitegrid')
+
+    # 1. Loss curves (train vs val)
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(epochs, history['train_loss'], 'b-', label='Train Loss', linewidth=2)
+    ax.plot(epochs, history['val_loss'], 'r-', label='Val Loss', linewidth=2)
+    ax.set_xlabel('Epoch', fontsize=12)
+    ax.set_ylabel('Loss', fontsize=12)
+    ax.set_title('Training and Validation Loss', fontsize=14)
+    ax.legend(fontsize=10)
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(save_dir / 'loss.png', dpi=150)
+    plt.close()
+
+    # 2. Flow and LM Loss
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+    axes[0].plot(epochs, history['train_flow_loss'], 'b-', label='Train', linewidth=2)
+    axes[0].plot(epochs, history['val_flow_loss'], 'r-', label='Val', linewidth=2)
+    axes[0].set_xlabel('Epoch', fontsize=12)
+    axes[0].set_ylabel('Flow Loss', fontsize=12)
+    axes[0].set_title('Flow Matching Loss', fontsize=14)
+    axes[0].legend(fontsize=10)
+    axes[0].grid(True, alpha=0.3)
+
+    axes[1].plot(epochs, history['train_lm_loss'], 'b-', label='Train', linewidth=2)
+    axes[1].plot(epochs, history['val_lm_loss'], 'r-', label='Val', linewidth=2)
+    axes[1].set_xlabel('Epoch', fontsize=12)
+    axes[1].set_ylabel('LM Loss', fontsize=12)
+    axes[1].set_title('Language Model Loss', fontsize=14)
+    axes[1].legend(fontsize=10)
+    axes[1].grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(save_dir / 'flow_lm_loss.png', dpi=150)
+    plt.close()
+
+    # 3. Perplexity
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(epochs, history['perplexity'], 'g-', linewidth=2, marker='o', markersize=4)
+    ax.set_xlabel('Epoch', fontsize=12)
+    ax.set_ylabel('Perplexity', fontsize=12)
+    ax.set_title('Validation Perplexity', fontsize=14)
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(save_dir / 'perplexity.png', dpi=150)
+    plt.close()
+
+    # 4. Correlation metrics (Pearson & Spearman)
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(epochs, history['pearson'], 'b-', label='Pearson', linewidth=2, marker='o', markersize=4)
+    ax.plot(epochs, history['spearman'], 'r-', label='Spearman', linewidth=2, marker='s', markersize=4)
+    ax.set_xlabel('Epoch', fontsize=12)
+    ax.set_ylabel('Correlation', fontsize=12)
+    ax.set_title('Correlation Metrics', fontsize=14)
+    ax.legend(fontsize=10)
+    ax.grid(True, alpha=0.3)
+    ax.set_ylim(-0.1, 1.0)
+    plt.tight_layout()
+    plt.savefig(save_dir / 'correlation.png', dpi=150)
+    plt.close()
+
+    # 5. Phase prediction metrics (MSE, MAE, RMSE)
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(epochs, history['mse'], 'b-', label='MSE', linewidth=2)
+    ax.plot(epochs, history['mae'], 'g-', label='MAE', linewidth=2)
+    ax.plot(epochs, history['rmse'], 'r-', label='RMSE', linewidth=2)
+    ax.set_xlabel('Epoch', fontsize=12)
+    ax.set_ylabel('Error', fontsize=12)
+    ax.set_title('Phase Prediction Metrics', fontsize=14)
+    ax.legend(fontsize=10)
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(save_dir / 'phase_metrics.png', dpi=150)
+    plt.close()
+
+    # 6. Summary plot (all key metrics in one figure)
+    fig, axes = plt.subplots(2, 3, figsize=(18, 10))
+
+    # Loss
+    axes[0, 0].plot(epochs, history['train_loss'], 'b-', label='Train', linewidth=2)
+    axes[0, 0].plot(epochs, history['val_loss'], 'r-', label='Val', linewidth=2)
+    axes[0, 0].set_title('Total Loss', fontsize=12)
+    axes[0, 0].legend(fontsize=9)
+    axes[0, 0].grid(True, alpha=0.3)
+
+    # Perplexity
+    axes[0, 1].plot(epochs, history['perplexity'], 'g-', linewidth=2)
+    axes[0, 1].set_title('Perplexity', fontsize=12)
+    axes[0, 1].grid(True, alpha=0.3)
+
+    # Correlation
+    axes[0, 2].plot(epochs, history['pearson'], 'b-', label='Pearson', linewidth=2)
+    axes[0, 2].plot(epochs, history['spearman'], 'r-', label='Spearman', linewidth=2)
+    axes[0, 2].set_title('Correlation', fontsize=12)
+    axes[0, 2].legend(fontsize=9)
+    axes[0, 2].grid(True, alpha=0.3)
+
+    # Flow Loss
+    axes[1, 0].plot(epochs, history['train_flow_loss'], 'b-', label='Train', linewidth=2)
+    axes[1, 0].plot(epochs, history['val_flow_loss'], 'r-', label='Val', linewidth=2)
+    axes[1, 0].set_title('Flow Loss', fontsize=12)
+    axes[1, 0].legend(fontsize=9)
+    axes[1, 0].grid(True, alpha=0.3)
+
+    # LM Loss
+    axes[1, 1].plot(epochs, history['train_lm_loss'], 'b-', label='Train', linewidth=2)
+    axes[1, 1].plot(epochs, history['val_lm_loss'], 'r-', label='Val', linewidth=2)
+    axes[1, 1].set_title('LM Loss', fontsize=12)
+    axes[1, 1].legend(fontsize=9)
+    axes[1, 1].grid(True, alpha=0.3)
+
+    # Phase Metrics
+    axes[1, 2].plot(epochs, history['mae'], 'g-', label='MAE', linewidth=2)
+    axes[1, 2].plot(epochs, history['rmse'], 'r-', label='RMSE', linewidth=2)
+    axes[1, 2].set_title('Phase Metrics', fontsize=12)
+    axes[1, 2].legend(fontsize=9)
+    axes[1, 2].grid(True, alpha=0.3)
+
+    for ax in axes.flat:
+        ax.set_xlabel('Epoch', fontsize=10)
+
+    plt.suptitle('Training Summary', fontsize=14, fontweight='bold')
+    plt.tight_layout()
+    plt.savefig(save_dir / 'summary.png', dpi=150)
+    plt.close()
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Train PhaseFlow model")
     parser.add_argument(
@@ -43,7 +187,7 @@ def parse_args():
     parser.add_argument(
         "--data_path",
         type=str,
-        default="/data4/huangyanjie/LLPS/phase_diagram/phase_diagram.csv",
+        default="/data/yanjie_huang/LLPS/phase_diagram/phase_diagram_original_scale.csv",
         help="Path to phase diagram CSV"
     )
     parser.add_argument(
@@ -69,6 +213,13 @@ def parse_args():
         type=str,
         default="cuda" if torch.cuda.is_available() else "cpu",
         help="Device to use"
+    )
+    parser.add_argument(
+        "--missing_threshold",
+        type=int,
+        default=-1,
+        help="Missing value threshold for split (-1 to disable). "
+             "Train uses missing_0 to missing_{threshold}, val/test uses missing_{threshold+1} to 15"
     )
     # Override config options
     parser.add_argument("--batch_size", type=int, default=None)
@@ -234,7 +385,7 @@ def validate(
         # Generate phase diagrams for evaluation
         pred_phase = model.generate_phase(
             input_ids, attention_mask, seq_len,
-            method='euler'  # 使用简单的 Euler 进行快速评估
+            method='euler',
         )
 
         all_pred_phase.append(pred_phase.cpu())
@@ -255,7 +406,8 @@ def validate(
     )
     logger.info(
         f"Phase Metrics - MSE: {phase_metrics['mse']:.4f}, "
-        f"MAE: {phase_metrics['mae']:.4f}, RMSE: {phase_metrics['rmse']:.4f}"
+        f"MAE: {phase_metrics['mae']:.4f}, RMSE: {phase_metrics['rmse']:.4f}, "
+        f"Pearson: {phase_metrics['pearson']:.4f}, Spearman: {phase_metrics['spearman']:.4f}"
     )
 
     return {
@@ -265,6 +417,108 @@ def validate(
         'perplexity': perplexity_meter.avg,
         **phase_metrics,
     }
+
+
+@torch.no_grad()
+def evaluate_test(
+    model: nn.Module,
+    test_loader,
+    device: str,
+    config: dict,
+    logger,
+    output_dir: Path,
+):
+    """Evaluate the model on test set."""
+    model.eval()
+
+    loss_meter = AverageMeter("Loss")
+    flow_loss_meter = AverageMeter("Flow Loss")
+    lm_loss_meter = AverageMeter("LM Loss")
+    perplexity_meter = AverageMeter("Perplexity")
+
+    # For phase prediction metrics
+    all_pred_phase = []
+    all_target_phase = []
+    all_phase_mask = []
+
+    for batch in tqdm(test_loader, desc="Test Evaluation"):
+        input_ids = batch['input_ids'].to(device)
+        attention_mask = batch['attention_mask'].to(device)
+        phase_values = batch['phase_values'].to(device)
+        phase_mask = batch['phase_mask'].to(device)
+        seq_len = batch['seq_len'].to(device)
+
+        labels = create_labels_for_lm(
+            input_ids,
+            pad_token_id=AminoAcidTokenizer.PAD_ID,
+            som_token_id=AminoAcidTokenizer.SOM_ID,
+            eos_token_id=AminoAcidTokenizer.EOS_ID,
+        )
+
+        outputs = model(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            phase=phase_values,
+            phase_mask=phase_mask,
+            seq_len=seq_len,
+            labels=labels,
+            flow_weight=config['training']['flow_loss_weight'],
+            lm_weight=config['training']['lm_loss_weight'],
+        )
+
+        batch_size = input_ids.shape[0]
+        loss_meter.update(outputs['loss'].item(), batch_size)
+        flow_loss_meter.update(outputs['flow_loss'].item(), batch_size)
+        lm_loss_meter.update(outputs['lm_loss'].item(), batch_size)
+        perplexity_meter.update(outputs['perplexity'].item(), batch_size)
+
+        # Generate phase diagrams for evaluation
+        pred_phase = model.generate_phase(
+            input_ids, attention_mask, seq_len,
+            method='euler',
+        )
+
+        all_pred_phase.append(pred_phase.cpu())
+        all_target_phase.append(phase_values.cpu())
+        all_phase_mask.append(phase_mask.cpu())
+
+    # Compute phase prediction metrics
+    pred_phase = torch.cat(all_pred_phase, dim=0)
+    target_phase = torch.cat(all_target_phase, dim=0)
+    phase_mask = torch.cat(all_phase_mask, dim=0)
+
+    phase_metrics = compute_metrics(pred_phase, target_phase, phase_mask)
+
+    logger.info("=" * 60)
+    logger.info("TEST SET EVALUATION")
+    logger.info("=" * 60)
+    logger.info(
+        f"Test - Loss: {loss_meter.avg:.4f}, "
+        f"Flow: {flow_loss_meter.avg:.4f}, LM: {lm_loss_meter.avg:.4f}, "
+        f"Perplexity: {perplexity_meter.avg:.2f}"
+    )
+    logger.info(
+        f"Phase Metrics - MSE: {phase_metrics['mse']:.4f}, "
+        f"MAE: {phase_metrics['mae']:.4f}, RMSE: {phase_metrics['rmse']:.4f}, "
+        f"Pearson: {phase_metrics['pearson']:.4f}, Spearman: {phase_metrics['spearman']:.4f}"
+    )
+    logger.info("=" * 60)
+
+    # Save test metrics to file
+    test_results = {
+        'loss': loss_meter.avg,
+        'flow_loss': flow_loss_meter.avg,
+        'lm_loss': lm_loss_meter.avg,
+        'perplexity': perplexity_meter.avg,
+        **phase_metrics,
+    }
+
+    results_path = output_dir / "test_results.json"
+    with open(results_path, 'w') as f:
+        json.dump({k: float(v) for k, v in test_results.items()}, f, indent=2)
+    logger.info(f"Test results saved to: {results_path}")
+
+    return test_results
 
 
 def main():
@@ -323,9 +577,13 @@ def main():
     if args.depth:
         config['model']['depth'] = args.depth
 
-    # Setup output directory
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_dir = Path(args.output_dir) / f"run_{timestamp}"
+    # Setup output directory (use config filename)
+    # Auto-switch to outputs_set/ when using set encoder, unless user explicitly passed --output_dir
+    config_name = Path(args.config).stem  # e.g., "bs512_lr0.0032_flow0.8_20260122"
+    base_dir = args.output_dir
+    if config['model'].get('use_set_encoder', False) and args.output_dir == "outputs":
+        base_dir = "outputs_set"
+    output_dir = Path(base_dir) / f"output_{config_name}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Setup logger
@@ -347,38 +605,53 @@ def main():
     # Create tokenizer
     tokenizer = AminoAcidTokenizer()
 
-    # Create dataloaders
+    # Create dataloaders with hardcoded val/test sets
     logger.info("Loading data...")
+    logger.info(f"Using missing threshold split: threshold={args.missing_threshold}")
+    logger.info("Using hardcoded val/test sets from phase_diagram/val_set.csv and test_set.csv")
+
+    # Training set: use all data filtered by missing_threshold (no splitting)
     train_loader = create_dataloader(
         args.data_path,
         batch_size=config['training']['batch_size'],
-        split='train',
+        split='all',  # Use all filtered data for training (no split)
         num_workers=config['data']['num_workers'],
         tokenizer=tokenizer,
         max_seq_len=config['model']['max_seq_len'],
-        train_ratio=config['data']['train_ratio'],
-        val_ratio=config['data']['val_ratio'],
-        seed=args.seed,
-        use_npz=True,  # 优先使用NPZ文件快速加载
-        normalize_phase=False,  # 数据已经是[-1,1]范围
-    )
-
-    val_loader = create_dataloader(
-        args.data_path,
-        batch_size=config['training']['batch_size'],
-        split='val',
-        num_workers=config['data']['num_workers'],
-        tokenizer=tokenizer,
-        max_seq_len=config['model']['max_seq_len'],
-        train_ratio=config['data']['train_ratio'],
-        val_ratio=config['data']['val_ratio'],
-        seed=args.seed,
-        use_npz=True,
+        use_npz=False,
         normalize_phase=False,
+        missing_threshold=args.missing_threshold,
     )
 
-    logger.info(f"Train samples: {len(train_loader.dataset)}")
+    # Validation set: hardcoded from val_set.csv
+    val_loader = create_dataloader(
+        '/data/yanjie_huang/LLPS/phase_diagram/val_set.csv',
+        batch_size=config['training']['batch_size'],
+        split='all',  # Use all data in this file
+        num_workers=config['data']['num_workers'],
+        tokenizer=tokenizer,
+        max_seq_len=config['model']['max_seq_len'],
+        use_npz=False,
+        normalize_phase=False,
+        missing_threshold=-1,  # Use all data from val_set.csv
+    )
+
+    # Test set: hardcoded from test_set.csv
+    test_loader = create_dataloader(
+        '/data/yanjie_huang/LLPS/phase_diagram/test_set.csv',
+        batch_size=config['training']['batch_size'],
+        split='all',  # Use all data in this file
+        num_workers=config['data']['num_workers'],
+        tokenizer=tokenizer,
+        max_seq_len=config['model']['max_seq_len'],
+        use_npz=False,
+        normalize_phase=False,
+        missing_threshold=-1,  # Use all data from test_set.csv
+    )
+
+    logger.info(f"Train samples (missing <= {args.missing_threshold}): {len(train_loader.dataset)}")
     logger.info(f"Val samples: {len(val_loader.dataset)}")
+    logger.info(f"Test samples: {len(test_loader.dataset)}")
 
     # Create model
     logger.info("Creating model...")
@@ -391,6 +664,7 @@ def main():
         phase_dim=config['model']['phase_dim'],
         max_seq_len=config['model']['max_seq_len'],
         dropout=config['model']['dropout'],
+        use_set_encoder=config['model'].get('use_set_encoder', False),
     )
     model = model.to(args.device)
 
@@ -433,17 +707,50 @@ def main():
         mode='min'
     )
 
+    # Initialize training history for visualization
+    history = {
+        'train_loss': [], 'val_loss': [],
+        'train_flow_loss': [], 'val_flow_loss': [],
+        'train_lm_loss': [], 'val_lm_loss': [],
+        'perplexity': [],
+        'mse': [], 'mae': [], 'rmse': [],
+        'pearson': [], 'spearman': [],
+    }
+
+    # Create visualization directory using config filename
+    config_name = Path(args.config).stem  # e.g., "bs2048_lr0.0064_flow10_20260122"
+    visual_dir = Path("/data/yanjie_huang/LLPS/predictor/PhaseFlow_WJX_Test/visual_training") / config_name
+    visual_dir.mkdir(parents=True, exist_ok=True)
+    logger.info(f"Visualization directory: {visual_dir}")
+
     # Training loop
     logger.info("Starting training...")
     for epoch in range(start_epoch, config['training']['epochs'] + 1):
         # Train
         train_metrics = train_epoch(
             model, train_loader, optimizer, scheduler, scaler,
-            args.device, epoch, config, logger
+            args.device, epoch, config, logger,
         )
 
         # Validate
         val_metrics = validate(model, val_loader, args.device, config, logger)
+
+        # Update history
+        history['train_loss'].append(train_metrics['loss'])
+        history['val_loss'].append(val_metrics['loss'])
+        history['train_flow_loss'].append(train_metrics['flow_loss'])
+        history['val_flow_loss'].append(val_metrics['flow_loss'])
+        history['train_lm_loss'].append(train_metrics['lm_loss'])
+        history['val_lm_loss'].append(val_metrics['lm_loss'])
+        history['perplexity'].append(val_metrics['perplexity'])
+        history['mse'].append(val_metrics['mse'])
+        history['mae'].append(val_metrics['mae'])
+        history['rmse'].append(val_metrics['rmse'])
+        history['pearson'].append(val_metrics['pearson'])
+        history['spearman'].append(val_metrics['spearman'])
+
+        # Update training curves
+        plot_training_curves(history, visual_dir)
 
         # Save checkpoint
         is_best = val_metrics['loss'] < best_val_loss
@@ -484,6 +791,13 @@ def main():
 
     logger.info("Training completed!")
     logger.info(f"Best validation loss: {best_val_loss:.4f}")
+
+    # Evaluate on test set if using missing_split
+    if args.missing_threshold >= 0:
+        logger.info("\nEvaluating on test set (incomplete phase diagrams)...")
+        test_metrics = evaluate_test(model, test_loader, args.device, config, logger, output_dir)
+
+    logger.info("Done!")
 
 
 if __name__ == "__main__":

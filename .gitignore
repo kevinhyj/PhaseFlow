@@ -37,9 +37,29 @@ venv.bak/
 
 # Training outputs
 outputs/
+outputs_set/
+outputs_set_crossattn_backup/
 logs/
+visual_training/
 *.pt
 *.ckpt
+
+# Backup
+backup/
+
+# Inference results
+infer/comparison/
+infer/lm_evaluation_results/
+
+# Binary / large data files
+*.npz
+*.pkl
+*.pickle
+*.jsonl
+
+# Misc
+nohup.out
+sliding_window_scoring/*.log
 
 # Config
 *.yaml

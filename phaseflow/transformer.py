@@ -107,6 +107,8 @@ class Attention(nn.Module):
         rotary_emb: RotaryEmbedding,
         attention_mask: Optional[torch.Tensor] = None,
         phase_start_idx: Optional[int] = None,
+        phase_end_idx: Optional[int] = None,
+        skip_phase_rope: bool = False,
     ) -> torch.Tensor:
         """
         Args:
@@ -114,6 +116,8 @@ class Attention(nn.Module):
             rotary_emb: Rotary embedding instance
             attention_mask: Attention mask (batch, seq) or (batch, seq, seq)
             phase_start_idx: Index where phase tokens start (for bidirectional attention)
+            phase_end_idx: Index where phase tokens end (for LM direction layout)
+            skip_phase_rope: If True, only apply RoPE to seq tokens, skip phase tokens
 
         Returns:
             Output tensor (batch, seq, dim)
@@ -130,16 +134,33 @@ class Attention(nn.Module):
         k = rearrange(k, 'b n (h d) -> b h n d', h=self.heads)
         v = rearrange(v, 'b n (h d) -> b h n d', h=self.heads)
 
-        # Use the library's rotate_queries_or_keys method
-        # This handles the rotary embedding correctly for multi-head attention
-        q = rotary_emb.rotate_queries_or_keys(q)
-        k = rotary_emb.rotate_queries_or_keys(k)
+        # Apply RoPE selectively: skip phase tokens when using set encoder
+        if skip_phase_rope and phase_end_idx is not None:
+            # LM direction: [phase(0..E-1), seq(E..end)]
+            # Only rotate seq tokens; seq RoPE positions start from 0
+            E = phase_end_idx
+            q_seq = rotary_emb.rotate_queries_or_keys(q[:, :, E:, :])
+            k_seq = rotary_emb.rotate_queries_or_keys(k[:, :, E:, :])
+            q = torch.cat([q[:, :, :E, :], q_seq], dim=2)
+            k = torch.cat([k[:, :, :E, :], k_seq], dim=2)
+        elif skip_phase_rope and phase_start_idx is not None:
+            # Flow direction: [seq(0..S-1), phase(S..end)]
+            # Only rotate seq tokens
+            S = phase_start_idx
+            q_seq = rotary_emb.rotate_queries_or_keys(q[:, :, :S, :])
+            k_seq = rotary_emb.rotate_queries_or_keys(k[:, :, :S, :])
+            q = torch.cat([q_seq, q[:, :, S:, :]], dim=2)
+            k = torch.cat([k_seq, k[:, :, S:, :]], dim=2)
+        else:
+            # Legacy: apply RoPE to all positions
+            q = rotary_emb.rotate_queries_or_keys(q)
+            k = rotary_emb.rotate_queries_or_keys(k)
 
         # Compute attention scores
         scores = torch.einsum('bhid,bhjd->bhij', q, k) * self.scale
 
         # Build attention mask
-        mask = self._build_attention_mask(batch, seq_len, x.device, phase_start_idx)
+        mask = self._build_attention_mask(batch, seq_len, x.device, phase_start_idx, phase_end_idx)
 
         if attention_mask is not None:
             # Expand attention mask to (batch, 1, 1, seq)
@@ -166,23 +187,32 @@ class Attention(nn.Module):
         batch: int,
         seq_len: int,
         device: torch.device,
-        phase_start_idx: Optional[int] = None
+        phase_start_idx: Optional[int] = None,
+        phase_end_idx: Optional[int] = None,
     ) -> torch.Tensor:
         """Build attention mask with causal + bidirectional for phase tokens.
 
-        The mask allows:
-        - Causal attention for sequence tokens (can only attend to previous)
-        - Bidirectional attention within phase diagram tokens
-        - Phase tokens can attend to all sequence tokens
+        Three modes:
+        1. phase_start_idx=None, phase_end_idx=None: Pure causal (legacy LM).
+        2. phase_start_idx=S, phase_end_idx=None: Flow direction.
+           [seq(0..S-1) causal] [phase(S..end) bidirectional + can attend all seq].
+        3. phase_start_idx=0, phase_end_idx=E: LM direction with set encoder.
+           [phase(0..E-1) bidirectional] [seq(E..end) causal + can attend all phase].
         """
         if self.causal:
             # Start with causal mask
             mask = torch.tril(torch.ones(seq_len, seq_len, device=device, dtype=torch.bool))
 
-            # If phase_start_idx is specified, allow bidirectional within phase region
-            if phase_start_idx is not None and phase_start_idx < seq_len:
-                # Phase tokens can attend to each other bidirectionally
-                mask[phase_start_idx:, phase_start_idx:] = True
+            if phase_start_idx is not None and phase_end_idx is not None:
+                # Mode 3: LM direction — [phase(0..E-1) bidir] [seq(E..end) causal+attend phase]
+                E = phase_end_idx
+                mask[:E, :E] = True       # phase tokens attend to each other bidirectionally
+                mask[E:, :E] = True        # seq tokens can attend to all phase tokens
+
+            elif phase_start_idx is not None and phase_end_idx is None:
+                # Mode 2: Flow direction — [seq(0..S-1)] [phase(S..end) bidir]
+                if phase_start_idx < seq_len:
+                    mask[phase_start_idx:, phase_start_idx:] = True
         else:
             mask = torch.ones(seq_len, seq_len, device=device, dtype=torch.bool)
 
@@ -229,13 +259,17 @@ class TransformerBlock(nn.Module):
         rotary_emb: RotaryEmbedding,
         attention_mask: Optional[torch.Tensor] = None,
         phase_start_idx: Optional[int] = None,
+        phase_end_idx: Optional[int] = None,
+        skip_phase_rope: bool = False,
     ) -> torch.Tensor:
         # Pre-norm attention with residual
         x = x + self.attn(
             self.attn_norm(x),
             rotary_emb,
             attention_mask,
-            phase_start_idx
+            phase_start_idx,
+            phase_end_idx,
+            skip_phase_rope,
         )
 
         # Pre-norm feed-forward with residual
@@ -306,19 +340,23 @@ class Transformer(nn.Module):
         x: torch.Tensor,
         attention_mask: Optional[torch.Tensor] = None,
         phase_start_idx: Optional[int] = None,
+        phase_end_idx: Optional[int] = None,
+        skip_phase_rope: bool = False,
     ) -> torch.Tensor:
         """
         Args:
             x: Input embeddings (batch, seq, dim)
             attention_mask: Attention mask (batch, seq)
             phase_start_idx: Index where phase tokens start
+            phase_end_idx: Index where phase tokens end (for LM direction with set encoder)
+            skip_phase_rope: If True, only apply RoPE to seq tokens, skip phase tokens
 
         Returns:
             Output embeddings (batch, seq, dim)
         """
         # Pass through transformer layers
         for layer in self.layers:
-            x = layer(x, self.rotary, attention_mask, phase_start_idx)
+            x = layer(x, self.rotary, attention_mask, phase_start_idx, phase_end_idx, skip_phase_rope)
 
         # Final normalization
         x = self.final_norm(x)

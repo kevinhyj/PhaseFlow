@@ -7,7 +7,7 @@ CHECKPOINT=${1:-"outputs/run_xxx/best_model.pt"}
 GPU_ID=${2:-0}
 export CUDA_VISIBLE_DEVICES=$GPU_ID
 
-PROJECT_DIR="/data4/huangyanjie/LLPS/predictor/PhaseFlow"
+PROJECT_DIR="/data/yanjie_huang/LLPS/predictor/PhaseFlow_WJX_Test"
 
 # 添加PYTHONPATH
 export PYTHONPATH="${PROJECT_DIR}:${PYTHONPATH}"
