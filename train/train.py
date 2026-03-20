@@ -383,9 +383,19 @@ def validate(
         perplexity_meter.update(outputs['perplexity'].item(), batch_size)
 
         # Generate phase diagrams for evaluation
+        # DDPM uses DDIM sampling; flow matching uses euler
+        sampling_kwargs = {}
+        if hasattr(model, 'diffusion_type') and model.diffusion_type == 'ddpm':
+            sampling_kwargs = dict(
+                num_steps=config.get('sampling', {}).get('sampling_steps', 50),
+                use_ddim=config.get('sampling', {}).get('use_ddim', True),
+            )
+        else:
+            sampling_kwargs = dict(method='euler')
+
         pred_phase = model.generate_phase(
             input_ids, attention_mask, seq_len,
-            method='euler',
+            **sampling_kwargs,
         )
 
         all_pred_phase.append(pred_phase.cpu())
@@ -473,9 +483,18 @@ def evaluate_test(
         perplexity_meter.update(outputs['perplexity'].item(), batch_size)
 
         # Generate phase diagrams for evaluation
+        sampling_kwargs = {}
+        if hasattr(model, 'diffusion_type') and model.diffusion_type == 'ddpm':
+            sampling_kwargs = dict(
+                num_steps=config.get('sampling', {}).get('sampling_steps', 50),
+                use_ddim=config.get('sampling', {}).get('use_ddim', True),
+            )
+        else:
+            sampling_kwargs = dict(method='euler')
+
         pred_phase = model.generate_phase(
             input_ids, attention_mask, seq_len,
-            method='euler',
+            **sampling_kwargs,
         )
 
         all_pred_phase.append(pred_phase.cpu())
@@ -578,11 +597,14 @@ def main():
         config['model']['depth'] = args.depth
 
     # Setup output directory (use config filename)
-    # Auto-switch to outputs_set/ when using set encoder, unless user explicitly passed --output_dir
+    # Auto-switch output dir based on model type, unless user explicitly passed --output_dir
     config_name = Path(args.config).stem  # e.g., "bs512_lr0.0032_flow0.8_20260122"
     base_dir = args.output_dir
-    if config['model'].get('use_set_encoder', False) and args.output_dir == "outputs":
-        base_dir = "outputs_set"
+    if args.output_dir == "outputs":
+        if config['model'].get('diffusion_type', 'flow_matching') == 'ddpm':
+            base_dir = "outputs_ddpm"
+        elif config['model'].get('use_set_encoder', False):
+            base_dir = "outputs_set"
     output_dir = Path(base_dir) / f"output_{config_name}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -665,6 +687,11 @@ def main():
         max_seq_len=config['model']['max_seq_len'],
         dropout=config['model']['dropout'],
         use_set_encoder=config['model'].get('use_set_encoder', False),
+        diffusion_type=config['model'].get('diffusion_type', 'flow_matching'),
+        num_timesteps=config['model'].get('num_timesteps', 1000),
+        beta_schedule=config['model'].get('beta_schedule', 'cosine'),
+        use_ot_coupling=config['model'].get('use_ot_coupling', False),
+        use_quadratic_weighting=config['model'].get('use_quadratic_weighting', True),
     )
     model = model.to(args.device)
 
@@ -719,7 +746,7 @@ def main():
 
     # Create visualization directory using config filename
     config_name = Path(args.config).stem  # e.g., "bs2048_lr0.0064_flow10_20260122"
-    visual_dir = Path("/data/yanjie_huang/LLPS/predictor/PhaseFlow_WJX_Test/visual_training") / config_name
+    visual_dir = Path("/data/yanjie_huang/LLPS/predictor/PhaseFlow/visual_training") / config_name
     visual_dir.mkdir(parents=True, exist_ok=True)
     logger.info(f"Visualization directory: {visual_dir}")
 

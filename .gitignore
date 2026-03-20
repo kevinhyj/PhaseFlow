@@ -38,6 +38,7 @@ venv.bak/
 # Training outputs
 outputs/
 outputs_set/
+outputs_ddpm/
 outputs_set_crossattn_backup/
 logs/
 visual_training/

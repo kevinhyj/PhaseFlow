@@ -1,7 +1,10 @@
 """
-PhaseFlow: Main model combining Transformer backbone with Flow Matching.
+PhaseFlow: Main model combining Transformer backbone with Flow Matching / DDPM.
 """
 
+import math
+import numpy as np
+import ot
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -128,6 +131,11 @@ class PhaseFlow(nn.Module):
         dropout: float = 0.0,
         time_embed_dim: Optional[int] = None,
         use_set_encoder: bool = False,
+        diffusion_type: str = "flow_matching",  # "flow_matching" | "ddpm"
+        num_timesteps: int = 1000,
+        beta_schedule: str = "cosine",  # "cosine" | "linear"
+        use_ot_coupling: bool = False,  # OT minibatch coupling for flow matching
+        use_quadratic_weighting: bool = True,  # Quadratic reliability weighting for missing data
     ):
         """
         Args:
@@ -141,6 +149,13 @@ class PhaseFlow(nn.Module):
             dropout: Dropout rate
             time_embed_dim: Time embedding dimension (default: dim)
             use_set_encoder: Use set-based multi-token phase encoder
+            diffusion_type: "flow_matching" or "ddpm"
+            num_timesteps: Number of DDPM diffusion steps (default: 1000)
+            beta_schedule: "cosine" or "linear" beta schedule for DDPM
+            use_ot_coupling: Use minibatch OT to pair noise x_0 with target x_1,
+                             reducing trajectory crossings and variance collapse.
+            use_quadratic_weighting: Use (n/16)^2 weighting for samples with missing values.
+                                     If False, all samples weighted equally (uniform).
         """
         super().__init__()
 
@@ -151,6 +166,11 @@ class PhaseFlow(nn.Module):
         self.time_embed_dim = time_embed_dim or dim
         self.use_set_encoder = use_set_encoder
         self.phase_slots = phase_dim  # 16
+        self.diffusion_type = diffusion_type
+        self.num_timesteps = num_timesteps
+        self.beta_schedule = beta_schedule
+        self.use_ot_coupling = use_ot_coupling
+        self.use_quadratic_weighting = use_quadratic_weighting
 
         # Token embedding for amino acids
         self.token_embed = nn.Embedding(vocab_size, dim)
@@ -192,8 +212,47 @@ class PhaseFlow(nn.Module):
         # Velocity head for flow matching (predicting dx/dt)
         self.velocity_head = nn.Linear(dim, phase_dim)
 
+        # Initialize DDPM noise schedule if needed
+        if self.diffusion_type == "ddpm":
+            self._init_noise_schedule()
+
         # Initialize weights
         self._init_weights()
+
+    def _init_noise_schedule(self):
+        """Initialize DDPM noise schedule buffers (betas, alphas, etc.)."""
+        T = self.num_timesteps
+
+        if self.beta_schedule == "linear":
+            betas = torch.linspace(1e-4, 0.02, T)
+            alphas = 1.0 - betas
+            alphas_cumprod = torch.cumprod(alphas, dim=0)
+        elif self.beta_schedule == "cosine":
+            # Improved DDPM cosine schedule (Nichol & Dhariwal, 2021), s=0.008
+            s = 0.008
+            steps = torch.arange(T + 1, dtype=torch.float64)
+            f_t = torch.cos((steps / T + s) / (1 + s) * (math.pi / 2)) ** 2
+            # alphas_cumprod directly from cosine formula (T values, index 0~T-1)
+            alphas_cumprod = (f_t[1:] / f_t[0]).float()
+            # Derive betas and alphas from alphas_cumprod
+            alphas_cumprod_prev = torch.cat([torch.tensor([1.0]), alphas_cumprod[:-1]])
+            betas = (1 - alphas_cumprod / alphas_cumprod_prev).clamp(max=0.999)
+            alphas = 1.0 - betas
+        else:
+            raise ValueError(f"Unknown beta_schedule: {self.beta_schedule}")
+
+        # Clamp alphas_cumprod to prevent division by zero at tail
+        alphas_cumprod = alphas_cumprod.clamp(min=1e-6)
+        alphas_cumprod_prev = torch.cat([torch.tensor([1.0]), alphas_cumprod[:-1]])
+
+        self.register_buffer('betas', betas)
+        self.register_buffer('alphas', alphas)
+        self.register_buffer('alphas_cumprod', alphas_cumprod)
+        self.register_buffer('sqrt_alphas_cumprod', torch.sqrt(alphas_cumprod))
+        self.register_buffer('sqrt_one_minus_alphas_cumprod', torch.sqrt(1.0 - alphas_cumprod))
+        self.register_buffer('sqrt_recip_alphas', torch.sqrt(1.0 / alphas))
+        self.register_buffer('posterior_variance',
+                             betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod))
 
     def _init_weights(self):
         """Initialize model weights."""
@@ -396,7 +455,7 @@ class PhaseFlow(nn.Module):
             seq_len: (batch,) sequence lengths
 
         Returns:
-            Tuple of (loss, metrics_dict)
+            Tuple of (mse_loss, metrics_dict)
         """
         batch = phase.shape[0]
         device = phase.device
@@ -406,6 +465,22 @@ class PhaseFlow(nn.Module):
 
         # Sample noise x_0
         x_0 = torch.randn_like(phase)
+
+        # Minibatch OT coupling: re-pair x_0 with x_1 to reduce trajectory crossings
+        if self.use_ot_coupling:
+            with torch.no_grad():
+                # Only use valid (non-missing) dimensions for cost computation.
+                # For missing positions, substitute x_0 values so their contribution
+                # to the distance is zero (x_0[i] - x_0[i] = 0).
+                phase_for_cost = phase.clone()
+                phase_for_cost[phase_mask == 0] = x_0[phase_mask == 0]
+                cost = torch.cdist(x_0, phase_for_cost, p=2).pow(2).cpu().numpy()  # (B, B)
+                a = np.ones(batch) / batch
+                b = np.ones(batch) / batch
+                # Use exact OT (no regularization) to get a meaningful transport plan
+                T = ot.emd(a, b, cost)                         # (B, B)
+                indices = torch.from_numpy(T).argmax(dim=0).to(device)  # (B,)
+                x_0 = x_0[indices]
 
         # Compute x_t = (1-t) * x_0 + t * x_1
         t_expand = t.unsqueeze(-1)  # (batch, 1)
@@ -425,18 +500,85 @@ class PhaseFlow(nn.Module):
         # Quadratic weighting: w = (n / 16)^2
         # Complete (n=16): w=1.0, Half (n=8): w=0.25, Single (n=1): w~0.004
         valid_count = phase_mask.sum(dim=-1).clamp(min=1)  # (batch,)
-        weight = (valid_count / 16.0) ** 2
+        if self.use_quadratic_weighting:
+            weight = (valid_count / 16.0) ** 2
+        else:
+            weight = torch.ones_like(valid_count)
 
         # Loss per sample: mean over valid positions, then apply weight
         loss_per_sample = (masked_diff.sum(dim=-1) / valid_count) * weight
 
         # Mean over all samples
+        mse_loss = loss_per_sample.mean()
+
+        metrics = {
+            'flow_loss': mse_loss.detach(),
+            'valid_ratio': phase_mask.mean().detach(),
+            'avg_weight': weight.mean().detach(),
+        }
+
+        return mse_loss, metrics
+
+    def compute_ddpm_loss(
+        self,
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+        phase: torch.Tensor,
+        phase_mask: torch.Tensor,
+        seq_len: torch.Tensor,
+    ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        """Compute DDPM denoising loss.
+
+        Forward: x_t = sqrt(alpha_bar_t) * x_0 + sqrt(1 - alpha_bar_t) * eps
+        Target: eps (noise)
+
+        Args:
+            input_ids: (batch, seq) token IDs
+            attention_mask: (batch, seq) attention mask
+            phase: (batch, phase_dim) target phase diagram
+            phase_mask: (batch, phase_dim) mask (1=valid, 0=missing)
+            seq_len: (batch,) sequence lengths
+
+        Returns:
+            Tuple of (loss, metrics_dict)
+        """
+        batch = phase.shape[0]
+        device = phase.device
+
+        # Sample random integer timesteps
+        t_int = torch.randint(0, self.num_timesteps, (batch,), device=device)
+
+        # Normalize to [0, 1] for SinusoidalPosEmb (reuse time encoder)
+        t = t_int.float() / self.num_timesteps
+
+        # Sample noise
+        eps = torch.randn_like(phase)
+
+        # Forward diffusion: x_t = sqrt(alpha_bar_t) * x_0 + sqrt(1-alpha_bar_t) * eps
+        sqrt_ab = self.sqrt_alphas_cumprod[t_int].unsqueeze(-1)       # (batch, 1)
+        sqrt_one_minus_ab = self.sqrt_one_minus_alphas_cumprod[t_int].unsqueeze(-1)  # (batch, 1)
+        x_t = sqrt_ab * phase + sqrt_one_minus_ab * eps
+
+        # Predict noise using the same forward_flow backbone
+        eps_pred = self.forward_flow(input_ids, attention_mask, x_t, phase_mask, t, seq_len)
+
+        # MSE loss with masking (same weighting scheme as flow matching)
+        diff = (eps_pred - eps) ** 2
+        masked_diff = diff * phase_mask
+
+        valid_count = phase_mask.sum(dim=-1).clamp(min=1)
+        if self.use_quadratic_weighting:
+            weight = (valid_count / 16.0) ** 2
+        else:
+            weight = torch.ones_like(valid_count)
+
+        loss_per_sample = (masked_diff.sum(dim=-1) / valid_count) * weight
         loss = loss_per_sample.mean()
 
         metrics = {
-            'flow_loss': loss.detach(),
+            'flow_loss': loss.detach(),  # reuse key to avoid changing logging
             'valid_ratio': phase_mask.mean().detach(),
-            'avg_weight': weight.mean().detach(),  # Track average weight for monitoring
+            'avg_weight': weight.mean().detach(),
         }
 
         return loss, metrics
@@ -518,10 +660,15 @@ class PhaseFlow(nn.Module):
         Returns:
             Dict with 'loss' and various metrics
         """
-        # Flow matching loss (seq → phase)
-        flow_loss, flow_metrics = self.compute_flow_loss(
-            input_ids, attention_mask, phase, phase_mask, seq_len
-        )
+        # Diffusion loss (seq → phase): flow matching or DDPM
+        if self.diffusion_type == "ddpm":
+            flow_loss, flow_metrics = self.compute_ddpm_loss(
+                input_ids, attention_mask, phase, phase_mask, seq_len
+            )
+        else:
+            flow_loss, flow_metrics = self.compute_flow_loss(
+                input_ids, attention_mask, phase, phase_mask, seq_len
+            )
 
         # Language modeling loss (phase → seq) if labels provided
         if labels is not None:
@@ -553,24 +700,47 @@ class PhaseFlow(nn.Module):
         atol: float = 1e-5,
         rtol: float = 1e-5,
         return_trajectory: bool = False,
+        **kwargs,
     ) -> torch.Tensor:
-        """Generate phase diagram from sequence using ODE integration.
+        """Generate phase diagram from sequence.
 
-        Uses torchdiffeq for high-quality ODE solving.
+        Dispatches to ODE (flow matching) or DDPM/DDIM sampling based on diffusion_type.
 
         Args:
             input_ids: (batch, seq) token IDs
             attention_mask: (batch, seq) attention mask
             seq_len: (batch,) sequence lengths
-            method: ODE solver method ('dopri5', 'euler', 'midpoint', etc.)
-            atol: Absolute tolerance for adaptive methods
-            rtol: Relative tolerance for adaptive methods
-            return_trajectory: Whether to return full trajectory
+            method: ODE solver method (flow matching only)
+            atol: Absolute tolerance (flow matching only)
+            rtol: Relative tolerance (flow matching only)
+            return_trajectory: Whether to return full trajectory (flow matching only)
+            **kwargs: DDPM-specific args: num_steps, use_ddim, eta
 
         Returns:
             (batch, phase_dim) generated phase diagram
-            or (batch, T, phase_dim) if return_trajectory (T depends on solver)
         """
+        if self.diffusion_type == "ddpm":
+            return self.generate_phase_ddpm(
+                input_ids, attention_mask, seq_len, **kwargs
+            )
+        return self._generate_phase_flow(
+            input_ids, attention_mask, seq_len,
+            method=method, atol=atol, rtol=rtol,
+            return_trajectory=return_trajectory,
+        )
+
+    @torch.no_grad()
+    def _generate_phase_flow(
+        self,
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+        seq_len: torch.Tensor,
+        method: str = 'dopri5',
+        atol: float = 1e-5,
+        rtol: float = 1e-5,
+        return_trajectory: bool = False,
+    ) -> torch.Tensor:
+        """Generate phase diagram using Flow Matching ODE integration."""
         batch = input_ids.shape[0]
         device = input_ids.device
 
@@ -582,26 +752,14 @@ class PhaseFlow(nn.Module):
 
         # Define ODE function: dx/dt = velocity(x, t)
         def ode_func(t, x):
-            """
-            Velocity function for the ODE.
-            Args:
-                t: scalar time value
-                x: (batch, phase_dim) current state
-            Returns:
-                v: (batch, phase_dim) velocity
-            """
-            # t is a scalar, broadcast to batch
             t_batch = torch.full((batch,), t.item() if t.dim() == 0 else t, device=device)
-            # Predict velocity field
             v = self.forward_flow(input_ids, attention_mask, x, phase_mask, t_batch, seq_len)
             return v
 
         # Time grid from t=0 to t=1
         if return_trajectory:
-            # More time points for visualization
             t_span = torch.linspace(0.0, 1.0, 50, device=device)
         else:
-            # Just start and end
             t_span = torch.tensor([0.0, 1.0], device=device)
 
         # Solve ODE using torchdiffeq
@@ -615,11 +773,105 @@ class PhaseFlow(nn.Module):
         )
 
         if return_trajectory:
-            # trajectory shape: (T, batch, phase_dim) -> (batch, T, phase_dim)
             return trajectory.permute(1, 0, 2)
         else:
-            # Return final state only
             return trajectory[-1]
+
+    @torch.no_grad()
+    def generate_phase_ddpm(
+        self,
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+        seq_len: torch.Tensor,
+        num_steps: Optional[int] = None,
+        use_ddim: bool = False,
+        eta: float = 0.0,
+    ) -> torch.Tensor:
+        """Generate phase diagram using DDPM or DDIM sampling.
+
+        Args:
+            input_ids: (batch, seq) token IDs
+            attention_mask: (batch, seq) attention mask
+            seq_len: (batch,) sequence lengths
+            num_steps: Number of sampling steps (None = full T steps for DDPM)
+            use_ddim: Use DDIM deterministic sampling (faster)
+            eta: DDIM stochasticity (0=deterministic, 1=DDPM)
+
+        Returns:
+            (batch, phase_dim) generated phase diagram
+        """
+        batch = input_ids.shape[0]
+        device = input_ids.device
+        T = self.num_timesteps
+
+        # Start from pure noise
+        x = torch.randn(batch, self.phase_dim, device=device)
+        phase_mask = torch.ones(batch, self.phase_dim, device=device)
+
+        if use_ddim:
+            # DDIM: sub-sampled timestep sequence for fast sampling
+            steps = num_steps or 50
+            # Uniformly spaced timesteps from T-1 down to 0
+            timesteps = torch.linspace(T - 1, 0, steps + 1, device=device).long()
+
+            for i in range(steps):
+                t_cur = timesteps[i]
+                t_next = timesteps[i + 1]
+
+                t_batch = torch.full((batch,), t_cur.item(), device=device)
+                t_norm = t_batch / T  # normalize to [0,1] for time encoder
+
+                # Predict noise
+                eps_pred = self.forward_flow(
+                    input_ids, attention_mask, x, phase_mask, t_norm, seq_len
+                )
+
+                # DDIM update
+                alpha_bar_t = self.alphas_cumprod[t_cur]
+                alpha_bar_next = self.alphas_cumprod[t_next] if t_next >= 0 else torch.tensor(1.0, device=device)
+
+                # Predict x_0 (clamp to prevent numerical explosion at high noise levels)
+                x0_pred = (x - torch.sqrt(1 - alpha_bar_t) * eps_pred) / torch.sqrt(alpha_bar_t).clamp(min=1e-3)
+                x0_pred = x0_pred.clamp(-5, 5)
+
+                # Direction pointing to x_t
+                sigma = eta * torch.sqrt(((1 - alpha_bar_next) / (1 - alpha_bar_t).clamp(min=1e-8)) * (1 - alpha_bar_t / alpha_bar_next.clamp(min=1e-8)))
+                dir_xt = torch.sqrt((1 - alpha_bar_next - sigma ** 2).clamp(min=0)) * eps_pred
+
+                # DDIM step
+                x = torch.sqrt(alpha_bar_next) * x0_pred + dir_xt
+                if eta > 0 and t_next > 0:
+                    x = x + sigma * torch.randn_like(x)
+
+        else:
+            # Full DDPM reverse process: T -> 0
+            steps = num_steps or T
+            # Use all timesteps or sub-sample
+            if steps < T:
+                timestep_seq = torch.linspace(T - 1, 0, steps, device=device).long()
+            else:
+                timestep_seq = torch.arange(T - 1, -1, -1, device=device)
+
+            for t_cur in timestep_seq:
+                t_batch = torch.full((batch,), t_cur.item(), device=device)
+                t_norm = t_batch / T
+
+                eps_pred = self.forward_flow(
+                    input_ids, attention_mask, x, phase_mask, t_norm, seq_len
+                )
+
+                alpha_t = self.alphas[t_cur]
+                alpha_bar_t = self.alphas_cumprod[t_cur]
+                beta_t = self.betas[t_cur]
+
+                # DDPM reverse step: x_{t-1} = 1/sqrt(alpha_t) * (x_t - beta_t/sqrt(1-alpha_bar_t) * eps_pred) + sigma * z
+                x = self.sqrt_recip_alphas[t_cur] * (x - beta_t / self.sqrt_one_minus_alphas_cumprod[t_cur].clamp(min=1e-4) * eps_pred)
+
+                if t_cur > 0:
+                    noise = torch.randn_like(x)
+                    x = x + torch.sqrt(self.posterior_variance[t_cur]) * noise
+
+        return x
 
     @torch.no_grad()
     def generate_sequence(
@@ -703,3 +955,38 @@ class PhaseFlow(nn.Module):
             decoded.append(tokenizer.decode_sequence(seq_tokens))
 
         return tokens, decoded
+
+    @torch.no_grad()
+    def compute_sequence_log_likelihood(
+        self,
+        input_ids: torch.Tensor,
+        attention_mask: torch.Tensor,
+        phase: torch.Tensor,
+        phase_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        """Compute per-sequence log-likelihood P(seq | phase).
+
+        Args:
+            input_ids: (batch, seq) token IDs [SOS, AA1, ..., AAn, EOS, PAD, ...]
+            attention_mask: (batch, seq) attention mask
+            phase: (batch, phase_dim) conditioning phase diagram
+            phase_mask: (batch, phase_dim) mask (1=valid, 0=missing)
+
+        Returns:
+            (batch,) average per-token log-likelihood for each sequence
+        """
+        logits = self.forward_lm(input_ids, attention_mask, phase, phase_mask)
+
+        # Shift: logits[i] predicts input_ids[i+1]
+        shift_logits = logits[:, :-1, :]   # (batch, seq-1, vocab)
+        shift_labels = input_ids[:, 1:]     # (batch, seq-1)
+
+        log_probs = F.log_softmax(shift_logits, dim=-1)
+        token_ll = log_probs.gather(2, shift_labels.unsqueeze(-1)).squeeze(-1)  # (batch, seq-1)
+
+        # Mask: only count real tokens (not PAD, not positions after EOS)
+        valid = (shift_labels != 20) & (shift_labels != -100)  # PAD_ID=20
+        valid_count = valid.sum(dim=-1).clamp(min=1)
+
+        per_seq_ll = (token_ll * valid).sum(dim=-1) / valid_count  # (batch,)
+        return per_seq_ll

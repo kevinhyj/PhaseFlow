@@ -1,0 +1,126 @@
+Device: cuda:6
+Samples: 500, Rounds: 50
+
+[Flow Matching]
+  Loaded output_set_flow32_missing15  [flow_matching]  dim=256 depth=6
+
+[DDPM]
+  Loaded output_set_ddpm_flow32_missing15  [ddpm]  dim=256 depth=6
+
+Warming up...
+
+=== Flow Matching benchmark (50 rounds, 500 samples) ===
+  Round   1/50  t=0.88s  Spearman=0.3041±0.2867
+  Round   2/50  t=0.75s  Spearman=0.3961±0.2639
+  Round   3/50  t=1.30s  Spearman=0.4368±0.2514
+  Round   4/50  t=0.55s  Spearman=0.4576±0.2457
+  Round   5/50  t=1.54s  Spearman=0.4709±0.2417
+  Round   6/50  t=0.71s  Spearman=0.4819±0.2368
+  Round   7/50  t=1.24s  Spearman=0.4908±0.2340
+  Round   8/50  t=1.37s  Spearman=0.4982±0.2303
+  Round   9/50  t=1.50s  Spearman=0.5039±0.2298
+  Round  10/50  t=0.90s  Spearman=0.5082±0.2265
+  Round  11/50  t=1.28s  Spearman=0.5118±0.2259
+  Round  12/50  t=0.55s  Spearman=0.5151±0.2262
+  Round  13/50  t=0.70s  Spearman=0.5188±0.2264
+  Round  14/50  t=0.89s  Spearman=0.5227±0.2251
+  Round  15/50  t=1.16s  Spearman=0.5251±0.2239
+  Round  16/50  t=0.66s  Spearman=0.5285±0.2239
+  Round  17/50  t=1.54s  Spearman=0.5305±0.2228
+  Round  18/50  t=0.66s  Spearman=0.5324±0.2223
+  Round  19/50  t=1.38s  Spearman=0.5349±0.2208
+  Round  20/50  t=1.12s  Spearman=0.5369±0.2201
+  Round  21/50  t=1.24s  Spearman=0.5380±0.2200
+  Round  22/50  t=0.78s  Spearman=0.5395±0.2197
+  Round  23/50  t=0.88s  Spearman=0.5416±0.2191
+  Round  24/50  t=1.00s  Spearman=0.5429±0.2186
+  Round  25/50  t=1.07s  Spearman=0.5446±0.2189
+  Round  26/50  t=1.97s  Spearman=0.5452±0.2182
+  Round  27/50  t=1.18s  Spearman=0.5473±0.2168
+  Round  28/50  t=0.87s  Spearman=0.5503±0.2162
+  Round  29/50  t=1.28s  Spearman=0.5517±0.2167
+  Round  30/50  t=1.17s  Spearman=0.5526±0.2163
+  Round  31/50  t=0.89s  Spearman=0.5531±0.2163
+  Round  32/50  t=0.65s  Spearman=0.5539±0.2153
+  Round  33/50  t=0.68s  Spearman=0.5553±0.2135
+  Round  34/50  t=0.78s  Spearman=0.5564±0.2134
+  Round  35/50  t=1.51s  Spearman=0.5573±0.2133
+  Round  36/50  t=1.35s  Spearman=0.5581±0.2132
+  Round  37/50  t=1.49s  Spearman=0.5588±0.2132
+  Round  38/50  t=1.01s  Spearman=0.5591±0.2127
+  Round  39/50  t=1.14s  Spearman=0.5595±0.2127
+  Round  40/50  t=0.98s  Spearman=0.5604±0.2124
+  Round  41/50  t=2.00s  Spearman=0.5609±0.2123
+  Round  42/50  t=1.32s  Spearman=0.5622±0.2109
+  Round  43/50  t=1.61s  Spearman=0.5627±0.2108
+  Round  44/50  t=1.28s  Spearman=0.5641±0.2104
+  Round  45/50  t=1.12s  Spearman=0.5649±0.2099
+  Round  46/50  t=1.56s  Spearman=0.5655±0.2094
+  Round  47/50  t=1.99s  Spearman=0.5668±0.2084
+  Round  48/50  t=1.17s  Spearman=0.5671±0.2082
+  Round  49/50  t=1.98s  Spearman=0.5685±0.2075
+  Round  50/50  t=1.64s  Spearman=0.5691±0.2071
+
+=== DDPM benchmark (50 rounds, 500 samples) ===
+  Round   1/50  t=149.85s  Spearman=0.1405±0.2940
+  Round   2/50  t=154.91s  Spearman=0.2731±0.2532
+  Round   3/50  t=154.15s  Spearman=0.3393±0.2336
+  Round   4/50  t=149.09s  Spearman=0.3827±0.2230
+  Round   5/50  t=150.30s  Spearman=0.4151±0.2150
+  Round   6/50  t=146.97s  Spearman=0.4369±0.2068
+  Round   7/50  t=153.13s  Spearman=0.4580±0.1962
+  Round   8/50  t=148.01s  Spearman=0.4704±0.1926
+  Round   9/50  t=150.87s  Spearman=0.4828±0.1875
+  Round  10/50  t=155.97s  Spearman=0.4923±0.1854
+  Round  11/50  t=154.90s  Spearman=0.5025±0.1806
+  Round  12/50  t=149.06s  Spearman=0.5130±0.1778
+  Round  13/50  t=156.99s  Spearman=0.5237±0.1746
+  Round  14/50  t=153.71s  Spearman=0.5309±0.1718
+  Round  15/50  t=153.22s  Spearman=0.5357±0.1702
+  Round  16/50  t=153.77s  Spearman=0.5413±0.1682
+  Round  17/50  t=152.73s  Spearman=0.5479±0.1682
+  Round  18/50  t=152.82s  Spearman=0.5521±0.1657
+  Round  19/50  t=157.24s  Spearman=0.5564±0.1638
+  Round  20/50  t=153.41s  Spearman=0.5618±0.1621
+  Round  21/50  t=156.78s  Spearman=0.5646±0.1617
+  Round  22/50  t=149.67s  Spearman=0.5685±0.1608
+  Round  23/50  t=155.51s  Spearman=0.5703±0.1594
+  Round  24/50  t=157.94s  Spearman=0.5738±0.1580
+  Round  25/50  t=151.89s  Spearman=0.5788±0.1577
+  Round  26/50  t=155.69s  Spearman=0.5805±0.1569
+  Round  27/50  t=155.47s  Spearman=0.5825±0.1562
+  Round  28/50  t=149.11s  Spearman=0.5844±0.1555
+  Round  29/50  t=151.06s  Spearman=0.5880±0.1553
+  Round  30/50  t=154.23s  Spearman=0.5892±0.1545
+  Round  31/50  t=155.78s  Spearman=0.5905±0.1538
+  Round  32/50  t=153.27s  Spearman=0.5919±0.1531
+  Round  33/50  t=154.08s  Spearman=0.5936±0.1524
+  Round  34/50  t=146.85s  Spearman=0.5948±0.1517
+  Round  35/50  t=158.24s  Spearman=0.5983±0.1508
+  Round  36/50  t=155.44s  Spearman=0.5995±0.1504
+  Round  37/50  t=153.77s  Spearman=0.6012±0.1496
+  Round  38/50  t=157.44s  Spearman=0.6024±0.1492
+  Round  39/50  t=159.94s  Spearman=0.6038±0.1488
+  Round  40/50  t=151.89s  Spearman=0.6043±0.1487
+  Round  41/50  t=155.36s  Spearman=0.6058±0.1483
+  Round  42/50  t=157.52s  Spearman=0.6073±0.1480
+  Round  43/50  t=141.89s  Spearman=0.6092±0.1478
+  Round  44/50  t=108.65s  Spearman=0.6100±0.1468
+  Round  45/50  t=108.71s  Spearman=0.6112±0.1464
+  Round  46/50  t=108.73s  Spearman=0.6127±0.1468
+  Round  47/50  t=108.73s  Spearman=0.6140±0.1466
+  Round  48/50  t=108.83s  Spearman=0.6157±0.1472
+  Round  49/50  t=108.68s  Spearman=0.6175±0.1471
+  Round  50/50  t=70.18s  Spearman=0.6189±0.1462
+
+Results saved → /data/yanjie_huang/LLPS/predictor/PhaseFlow/analysis/flow_vs_ddpm_ito/benchmark_results/benchmark_optimization_results.csv
+Saved → /data/yanjie_huang/LLPS/predictor/PhaseFlow/analysis/flow_vs_ddpm_ito/benchmark_results/benchmark_time_curve.png
+Saved → /data/yanjie_huang/LLPS/predictor/PhaseFlow/analysis/flow_vs_ddpm_ito/benchmark_results/benchmark_spearman_bar.png
+
+=======================================================
+                       Flow Matching            DDPM
+-------------------------------------------------------
+      Avg time/round           1.17s         146.25s
+      Final Spearman          0.5691          0.6189
+             Speedup          125.5x
+=======================================================

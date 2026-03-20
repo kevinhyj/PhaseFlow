@@ -1,0 +1,144 @@
+2026-03-10 00:40:18 - train - INFO - Output directory: /data/yanjie_huang/LLPS/predictor/PhaseFlow/outputs/output_bs2048_lr0.0008_flow32_20260123
+2026-03-10 00:40:19 - train - INFO - CUDA context initialized
+2026-03-10 00:40:19 - train - INFO - Loading data...
+2026-03-10 00:40:19 - train - INFO - Using missing threshold split: threshold=-1
+2026-03-10 00:40:19 - train - INFO - Using hardcoded val/test sets from phase_diagram/val_set.csv and test_set.csv
+2026-03-10 00:40:19 - train - INFO - Train samples (missing <= -1): 280778
+2026-03-10 00:40:19 - train - INFO - Val samples: 500
+2026-03-10 00:40:19 - train - INFO - Test samples: 500
+2026-03-10 00:40:19 - train - INFO - Creating model...
+2026-03-10 00:40:19 - train - INFO - Using Set Transformer encoder: False
+2026-03-10 00:40:19 - train - INFO - Model parameters: 6.85M (6,849,312)
+2026-03-10 00:40:20 - train - INFO - Visualization directory: /data/yanjie_huang/LLPS/predictor/PhaseFlow/visual_training/bs2048_lr0.0008_flow32_20260123
+2026-03-10 00:40:20 - train - INFO - Starting training...
+2026-03-10 00:40:47 - train - INFO - Epoch 1 - Train Loss: 16.7474, Flow: 0.4154, LM: 3.4531
+2026-03-10 00:40:47 - train - INFO - Validation - Loss: 43.1468, Flow: 1.2420, LM: 3.4033, Perplexity: 30.06
+2026-03-10 00:40:47 - train - INFO - Phase Metrics - MSE: 0.7582, MAE: 0.6923, RMSE: 0.8708, Pearson: 0.2156, Spearman: 0.2140
+2026-03-10 00:40:49 - train - INFO - Saved best model with val_loss=43.1468
+2026-03-10 00:41:15 - train - INFO - Epoch 2 - Train Loss: 13.9736, Flow: 0.3347, LM: 3.2641
+2026-03-10 00:41:16 - train - INFO - Validation - Loss: 42.2603, Flow: 1.2209, LM: 3.1907, Perplexity: 24.30
+2026-03-10 00:41:16 - train - INFO - Phase Metrics - MSE: 0.7012, MAE: 0.6651, RMSE: 0.8374, Pearson: 0.2627, Spearman: 0.2565
+2026-03-10 00:41:17 - train - INFO - Saved best model with val_loss=42.2603
+2026-03-10 00:41:44 - train - INFO - Epoch 3 - Train Loss: 13.6762, Flow: 0.3299, LM: 3.1192
+2026-03-10 00:41:44 - train - INFO - Validation - Loss: 41.6948, Flow: 1.2002, LM: 3.2886, Perplexity: 26.80
+2026-03-10 00:41:44 - train - INFO - Phase Metrics - MSE: 0.6472, MAE: 0.6361, RMSE: 0.8045, Pearson: 0.2976, Spearman: 0.2932
+2026-03-10 00:41:46 - train - INFO - Saved best model with val_loss=41.6948
+2026-03-10 00:42:13 - train - INFO - Epoch 4 - Train Loss: 13.7363, Flow: 0.3283, LM: 3.2296
+2026-03-10 00:42:13 - train - INFO - Validation - Loss: 41.7780, Flow: 1.2030, LM: 3.2824, Perplexity: 26.64
+2026-03-10 00:42:13 - train - INFO - Phase Metrics - MSE: 0.6532, MAE: 0.6350, RMSE: 0.8082, Pearson: 0.3124, Spearman: 0.3167
+2026-03-10 00:42:41 - train - INFO - Epoch 5 - Train Loss: 13.7687, Flow: 0.3273, LM: 3.2942
+2026-03-10 00:42:42 - train - INFO - Validation - Loss: 42.4900, Flow: 1.2242, LM: 3.3164, Perplexity: 27.56
+2026-03-10 00:42:42 - train - INFO - Phase Metrics - MSE: 0.6416, MAE: 0.6323, RMSE: 0.8010, Pearson: 0.3072, Spearman: 0.3006
+2026-03-10 00:43:10 - train - INFO - Epoch 6 - Train Loss: 13.7959, Flow: 0.3269, LM: 3.3339
+2026-03-10 00:43:10 - train - INFO - Validation - Loss: 41.7087, Flow: 1.2066, LM: 3.0962, Perplexity: 22.11
+2026-03-10 00:43:10 - train - INFO - Phase Metrics - MSE: 0.6092, MAE: 0.6173, RMSE: 0.7805, Pearson: 0.3226, Spearman: 0.3179
+2026-03-10 00:43:39 - train - INFO - Epoch 7 - Train Loss: 13.7224, Flow: 0.3258, LM: 3.2961
+2026-03-10 00:43:39 - train - INFO - Validation - Loss: 41.1823, Flow: 1.1834, LM: 3.3150, Perplexity: 27.52
+2026-03-10 00:43:39 - train - INFO - Phase Metrics - MSE: 0.6742, MAE: 0.6441, RMSE: 0.8211, Pearson: 0.3169, Spearman: 0.3156
+2026-03-10 00:43:41 - train - INFO - Saved best model with val_loss=41.1823
+2026-03-10 00:44:07 - train - INFO - Epoch 8 - Train Loss: 13.9207, Flow: 0.3303, LM: 3.3502
+2026-03-10 00:44:08 - train - INFO - Validation - Loss: 44.6566, Flow: 1.2855, LM: 3.5201, Perplexity: 33.79
+2026-03-10 00:44:08 - train - INFO - Phase Metrics - MSE: 0.8402, MAE: 0.7309, RMSE: 0.9166, Pearson: 0.1653, Spearman: 0.1689
+2026-03-10 00:44:36 - train - INFO - Epoch 9 - Train Loss: 14.0895, Flow: 0.3322, LM: 3.4597
+2026-03-10 00:44:37 - train - INFO - Validation - Loss: 40.1104, Flow: 1.1494, LM: 3.3296, Perplexity: 27.93
+2026-03-10 00:44:37 - train - INFO - Phase Metrics - MSE: 0.6136, MAE: 0.6214, RMSE: 0.7833, Pearson: 0.2990, Spearman: 0.3008
+2026-03-10 00:44:39 - train - INFO - Saved best model with val_loss=40.1104
+2026-03-10 00:45:05 - train - INFO - Epoch 10 - Train Loss: 13.8964, Flow: 0.3272, LM: 3.4246
+2026-03-10 00:45:05 - train - INFO - Validation - Loss: 41.9339, Flow: 1.2008, LM: 3.5083, Perplexity: 33.39
+2026-03-10 00:45:05 - train - INFO - Phase Metrics - MSE: 0.6181, MAE: 0.6202, RMSE: 0.7862, Pearson: 0.2894, Spearman: 0.2850
+2026-03-10 00:45:34 - train - INFO - Epoch 11 - Train Loss: 13.9300, Flow: 0.3254, LM: 3.5175
+2026-03-10 00:45:34 - train - INFO - Validation - Loss: 40.3340, Flow: 1.1587, LM: 3.2556, Perplexity: 25.94
+2026-03-10 00:45:34 - train - INFO - Phase Metrics - MSE: 0.5957, MAE: 0.6064, RMSE: 0.7718, Pearson: 0.3273, Spearman: 0.3239
+2026-03-10 00:46:02 - train - INFO - Epoch 12 - Train Loss: 13.9521, Flow: 0.3255, LM: 3.5367
+2026-03-10 00:46:03 - train - INFO - Validation - Loss: 41.3972, Flow: 1.1837, LM: 3.5193, Perplexity: 33.76
+2026-03-10 00:46:03 - train - INFO - Phase Metrics - MSE: 0.6303, MAE: 0.6268, RMSE: 0.7939, Pearson: 0.3336, Spearman: 0.3287
+2026-03-10 00:46:31 - train - INFO - Epoch 13 - Train Loss: 13.9655, Flow: 0.3256, LM: 3.5471
+2026-03-10 00:46:32 - train - INFO - Validation - Loss: 40.6276, Flow: 1.1615, LM: 3.4608, Perplexity: 31.84
+2026-03-10 00:46:32 - train - INFO - Phase Metrics - MSE: 0.5810, MAE: 0.5982, RMSE: 0.7622, Pearson: 0.3415, Spearman: 0.3405
+2026-03-10 00:47:00 - train - INFO - Epoch 14 - Train Loss: 14.0207, Flow: 0.3270, LM: 3.5568
+2026-03-10 00:47:00 - train - INFO - Validation - Loss: 43.3580, Flow: 1.2416, LM: 3.6278, Perplexity: 37.63
+2026-03-10 00:47:00 - train - INFO - Phase Metrics - MSE: 0.6295, MAE: 0.6290, RMSE: 0.7934, Pearson: 0.2891, Spearman: 0.2903
+2026-03-10 00:47:29 - train - INFO - Epoch 15 - Train Loss: 13.8742, Flow: 0.3271, LM: 3.4079
+2026-03-10 00:47:29 - train - INFO - Validation - Loss: 41.5321, Flow: 1.2108, LM: 2.7881, Perplexity: 16.25
+2026-03-10 00:47:29 - train - INFO - Phase Metrics - MSE: 0.6374, MAE: 0.6314, RMSE: 0.7984, Pearson: 0.2854, Spearman: 0.2801
+2026-03-10 00:47:57 - train - INFO - Epoch 16 - Train Loss: 13.3775, Flow: 0.3270, LM: 2.9149
+2026-03-10 00:47:57 - train - INFO - Validation - Loss: 42.1129, Flow: 1.2279, LM: 2.8211, Perplexity: 16.79
+2026-03-10 00:47:57 - train - INFO - Phase Metrics - MSE: 0.6253, MAE: 0.6237, RMSE: 0.7908, Pearson: 0.3083, Spearman: 0.3111
+2026-03-10 00:48:26 - train - INFO - Epoch 17 - Train Loss: 13.2765, Flow: 0.3259, LM: 2.8476
+2026-03-10 00:48:26 - train - INFO - Validation - Loss: 43.3681, Flow: 1.2664, LM: 2.8425, Perplexity: 17.16
+2026-03-10 00:48:26 - train - INFO - Phase Metrics - MSE: 0.6275, MAE: 0.6235, RMSE: 0.7922, Pearson: 0.3085, Spearman: 0.3085
+2026-03-10 00:48:55 - train - INFO - Epoch 18 - Train Loss: 13.2462, Flow: 0.3244, LM: 2.8641
+2026-03-10 00:48:55 - train - INFO - Validation - Loss: 39.7581, Flow: 1.1529, LM: 2.8657, Perplexity: 17.56
+2026-03-10 00:48:55 - train - INFO - Phase Metrics - MSE: 0.6038, MAE: 0.6131, RMSE: 0.7771, Pearson: 0.3138, Spearman: 0.3113
+2026-03-10 00:48:57 - train - INFO - Saved best model with val_loss=39.7581
+2026-03-10 00:49:24 - train - INFO - Epoch 19 - Train Loss: 13.2202, Flow: 0.3228, LM: 2.8910
+2026-03-10 00:49:24 - train - INFO - Validation - Loss: 40.5887, Flow: 1.1797, LM: 2.8394, Perplexity: 17.11
+2026-03-10 00:49:24 - train - INFO - Phase Metrics - MSE: 0.6164, MAE: 0.6222, RMSE: 0.7851, Pearson: 0.2960, Spearman: 0.2851
+2026-03-10 00:49:52 - train - INFO - Epoch 20 - Train Loss: 13.1986, Flow: 0.3228, LM: 2.8691
+2026-03-10 00:49:53 - train - INFO - Validation - Loss: 39.4499, Flow: 1.1458, LM: 2.7846, Perplexity: 16.19
+2026-03-10 00:49:53 - train - INFO - Phase Metrics - MSE: 0.5892, MAE: 0.6057, RMSE: 0.7676, Pearson: 0.3280, Spearman: 0.3208
+2026-03-10 00:49:55 - train - INFO - Saved best model with val_loss=39.4499
+2026-03-10 00:50:21 - train - INFO - Epoch 21 - Train Loss: 13.1528, Flow: 0.3220, LM: 2.8493
+2026-03-10 00:50:21 - train - INFO - Validation - Loss: 41.5610, Flow: 1.2109, LM: 2.8130, Perplexity: 16.66
+2026-03-10 00:50:21 - train - INFO - Phase Metrics - MSE: 0.6417, MAE: 0.6317, RMSE: 0.8010, Pearson: 0.3283, Spearman: 0.3253
+2026-03-10 00:50:50 - train - INFO - Epoch 22 - Train Loss: 13.1888, Flow: 0.3224, LM: 2.8709
+2026-03-10 00:50:50 - train - INFO - Validation - Loss: 41.0912, Flow: 1.1951, LM: 2.8489, Perplexity: 17.27
+2026-03-10 00:50:50 - train - INFO - Phase Metrics - MSE: 0.5978, MAE: 0.6140, RMSE: 0.7732, Pearson: 0.3459, Spearman: 0.3387
+2026-03-10 00:51:18 - train - INFO - Epoch 23 - Train Loss: 13.2143, Flow: 0.3211, LM: 2.9397
+2026-03-10 00:51:19 - train - INFO - Validation - Loss: 42.5054, Flow: 1.2374, LM: 2.9084, Perplexity: 18.33
+2026-03-10 00:51:19 - train - INFO - Phase Metrics - MSE: 0.6033, MAE: 0.6138, RMSE: 0.7767, Pearson: 0.3418, Spearman: 0.3310
+2026-03-10 00:51:47 - train - INFO - Epoch 24 - Train Loss: 13.3533, Flow: 0.3225, LM: 3.0324
+2026-03-10 00:51:48 - train - INFO - Validation - Loss: 41.8009, Flow: 1.2149, LM: 2.9253, Perplexity: 18.64
+2026-03-10 00:51:48 - train - INFO - Phase Metrics - MSE: 0.5885, MAE: 0.6026, RMSE: 0.7671, Pearson: 0.3509, Spearman: 0.3502
+2026-03-10 00:52:16 - train - INFO - Epoch 25 - Train Loss: 13.3339, Flow: 0.3219, LM: 3.0318
+2026-03-10 00:52:16 - train - INFO - Validation - Loss: 40.5022, Flow: 1.1746, LM: 2.9144, Perplexity: 18.44
+2026-03-10 00:52:16 - train - INFO - Phase Metrics - MSE: 0.5920, MAE: 0.6049, RMSE: 0.7694, Pearson: 0.3495, Spearman: 0.3472
+2026-03-10 00:52:45 - train - INFO - Epoch 26 - Train Loss: 13.4426, Flow: 0.3231, LM: 3.1044
+2026-03-10 00:52:45 - train - INFO - Validation - Loss: 41.5572, Flow: 1.2039, LM: 3.0336, Perplexity: 20.77
+2026-03-10 00:52:45 - train - INFO - Phase Metrics - MSE: 0.5937, MAE: 0.6114, RMSE: 0.7705, Pearson: 0.2921, Spearman: 0.2841
+2026-03-10 00:53:13 - train - INFO - Epoch 27 - Train Loss: 13.6086, Flow: 0.3260, LM: 3.1768
+2026-03-10 00:53:14 - train - INFO - Validation - Loss: 43.5253, Flow: 1.2655, LM: 3.0283, Perplexity: 20.66
+2026-03-10 00:53:14 - train - INFO - Phase Metrics - MSE: 0.6663, MAE: 0.6508, RMSE: 0.8163, Pearson: 0.2913, Spearman: 0.2844
+2026-03-10 00:53:42 - train - INFO - Epoch 28 - Train Loss: 13.5715, Flow: 0.3227, LM: 3.2458
+2026-03-10 00:53:43 - train - INFO - Validation - Loss: 41.4409, Flow: 1.2009, LM: 3.0130, Perplexity: 20.35
+2026-03-10 00:53:43 - train - INFO - Phase Metrics - MSE: 0.5739, MAE: 0.5999, RMSE: 0.7575, Pearson: 0.3462, Spearman: 0.3414
+2026-03-10 00:54:11 - train - INFO - Epoch 29 - Train Loss: 13.5161, Flow: 0.3205, LM: 3.2610
+2026-03-10 00:54:11 - train - INFO - Validation - Loss: 42.7287, Flow: 1.2409, LM: 3.0205, Perplexity: 20.50
+2026-03-10 00:54:11 - train - INFO - Phase Metrics - MSE: 0.5881, MAE: 0.6049, RMSE: 0.7669, Pearson: 0.3142, Spearman: 0.3091
+2026-03-10 00:54:40 - train - INFO - Epoch 30 - Train Loss: 13.4748, Flow: 0.3214, LM: 3.1913
+2026-03-10 00:54:40 - train - INFO - Validation - Loss: 41.7914, Flow: 1.2190, LM: 2.7819, Perplexity: 16.15
+2026-03-10 00:54:40 - train - INFO - Phase Metrics - MSE: 0.5963, MAE: 0.6086, RMSE: 0.7722, Pearson: 0.3455, Spearman: 0.3349
+2026-03-10 00:55:08 - train - INFO - Epoch 31 - Train Loss: 13.4828, Flow: 0.3223, LM: 3.1683
+2026-03-10 00:55:09 - train - INFO - Validation - Loss: 40.6999, Flow: 1.1820, LM: 2.8757, Perplexity: 17.74
+2026-03-10 00:55:09 - train - INFO - Phase Metrics - MSE: 0.5930, MAE: 0.6055, RMSE: 0.7701, Pearson: 0.3156, Spearman: 0.3126
+2026-03-10 00:55:37 - train - INFO - Epoch 32 - Train Loss: 13.1578, Flow: 0.3207, LM: 2.8961
+2026-03-10 00:55:37 - train - INFO - Validation - Loss: 40.9873, Flow: 1.2031, LM: 2.4888, Perplexity: 12.05
+2026-03-10 00:55:37 - train - INFO - Phase Metrics - MSE: 0.6182, MAE: 0.6208, RMSE: 0.7862, Pearson: 0.3363, Spearman: 0.3301
+2026-03-10 00:56:06 - train - INFO - Epoch 33 - Train Loss: 12.9820, Flow: 0.3210, LM: 2.7088
+2026-03-10 00:56:06 - train - INFO - Validation - Loss: 40.9437, Flow: 1.2025, LM: 2.4626, Perplexity: 11.73
+2026-03-10 00:56:06 - train - INFO - Phase Metrics - MSE: 0.6124, MAE: 0.6207, RMSE: 0.7826, Pearson: 0.3424, Spearman: 0.3315
+2026-03-10 00:56:34 - train - INFO - Epoch 34 - Train Loss: 12.9116, Flow: 0.3215, LM: 2.6247
+2026-03-10 00:56:34 - train - INFO - Validation - Loss: 39.8641, Flow: 1.1684, LM: 2.4766, Perplexity: 11.90
+2026-03-10 00:56:34 - train - INFO - Phase Metrics - MSE: 0.5933, MAE: 0.6083, RMSE: 0.7703, Pearson: 0.3151, Spearman: 0.3058
+2026-03-10 00:57:03 - train - INFO - Epoch 35 - Train Loss: 12.9143, Flow: 0.3217, LM: 2.6203
+2026-03-10 00:57:03 - train - INFO - Validation - Loss: 40.0181, Flow: 1.1739, LM: 2.4519, Perplexity: 11.61
+2026-03-10 00:57:03 - train - INFO - Phase Metrics - MSE: 0.5981, MAE: 0.6129, RMSE: 0.7734, Pearson: 0.3258, Spearman: 0.3192
+2026-03-10 00:57:31 - train - INFO - Epoch 36 - Train Loss: 12.9251, Flow: 0.3226, LM: 2.6030
+2026-03-10 00:57:32 - train - INFO - Validation - Loss: 40.6311, Flow: 1.1929, LM: 2.4577, Perplexity: 11.68
+2026-03-10 00:57:32 - train - INFO - Phase Metrics - MSE: 0.5870, MAE: 0.6052, RMSE: 0.7662, Pearson: 0.3307, Spearman: 0.3173
+2026-03-10 00:58:00 - train - INFO - Epoch 37 - Train Loss: 12.9315, Flow: 0.3235, LM: 2.5782
+2026-03-10 00:58:01 - train - INFO - Validation - Loss: 41.5392, Flow: 1.2216, LM: 2.4464, Perplexity: 11.55
+2026-03-10 00:58:01 - train - INFO - Phase Metrics - MSE: 0.6137, MAE: 0.6226, RMSE: 0.7834, Pearson: 0.3137, Spearman: 0.3078
+2026-03-10 00:58:29 - train - INFO - Epoch 38 - Train Loss: 14.2833, Flow: 0.3254, LM: 3.8719
+2026-03-10 00:58:29 - train - INFO - Validation - Loss: 47.1155, Flow: 1.3698, LM: 3.2824, Perplexity: 26.64
+2026-03-10 00:58:29 - train - INFO - Phase Metrics - MSE: 1.3034, MAE: 0.9184, RMSE: 1.1416, Pearson: 0.0749, Spearman: 0.0722
+2026-03-10 00:58:57 - train - INFO - Epoch 39 - Train Loss: 13.4902, Flow: 0.3272, LM: 3.0197
+2026-03-10 00:58:58 - train - INFO - Validation - Loss: 40.8171, Flow: 1.1984, LM: 2.4696, Perplexity: 11.82
+2026-03-10 00:58:58 - train - INFO - Phase Metrics - MSE: 0.5976, MAE: 0.6119, RMSE: 0.7730, Pearson: 0.3128, Spearman: 0.3049
+2026-03-10 00:59:26 - train - INFO - Epoch 40 - Train Loss: 12.9598, Flow: 0.3236, LM: 2.6040
+2026-03-10 00:59:26 - train - INFO - Validation - Loss: 41.9303, Flow: 1.2337, LM: 2.4505, Perplexity: 11.59
+2026-03-10 00:59:26 - train - INFO - Phase Metrics - MSE: 0.6130, MAE: 0.6171, RMSE: 0.7830, Pearson: 0.3238, Spearman: 0.3228
+2026-03-10 00:59:28 - train - INFO - Early stopping triggered at epoch 40
+2026-03-10 00:59:29 - train - INFO - Training completed!
+2026-03-10 00:59:29 - train - INFO - Best validation loss: 39.4499
+2026-03-10 00:59:29 - train - INFO - Done!

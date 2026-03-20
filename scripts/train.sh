@@ -20,7 +20,7 @@
 # 配置区域 - 可直接修改这里的默认值
 # ========================================
 DEFAULT_GPU=4
-DEFAULT_CONFIG="/data/yanjie_huang/LLPS/predictor/PhaseFlow_WJX_Test/config/bs2048_lr0.0008_flow32_20260123.yaml"
+DEFAULT_CONFIG="/data/yanjie_huang/LLPS/predictor/PhaseFlow/config/bs2048_lr0.0008_flow32_20260123.yaml"
 DEFAULT_BATCH_SIZE=""      # 留空则使用 yaml 中的值
 DEFAULT_LR=""              # 留空则使用 yaml 中的值
 DEFAULT_EPOCHS=""          # 留空则使用 yaml 中的值
@@ -55,7 +55,7 @@ show_help() {
     echo "  -h, --help          显示帮助信息"
     echo ""
     echo "可用配置文件:"
-    ls -1 /data/yanjie_huang/LLPS/predictor/PhaseFlow_WJX_Test/config/*.yaml 2>/dev/null | xargs -n1 basename
+    ls -1 ${PROJECT_DIR}/config/*.yaml 2>/dev/null | xargs -n1 basename
     exit 0
 }
 
@@ -101,7 +101,7 @@ done
 # ========================================
 # 路径设置
 # ========================================
-PROJECT_DIR="/data/yanjie_huang/LLPS/predictor/PhaseFlow_WJX_Test"
+PROJECT_DIR="/data/yanjie_huang/LLPS/predictor/PhaseFlow"
 DATA_DIR="/data/yanjie_huang/LLPS/phase_diagram"
 LOG_DIR="${PROJECT_DIR}/logs"
 
@@ -126,8 +126,10 @@ if [[ ! -f "$CONFIG_PATH" ]]; then
     exit 1
 fi
 
-# Detect set encoder from config
-if grep -q "use_set_encoder.*true" "$CONFIG_PATH" 2>/dev/null; then
+# Detect output dir from config: ddpm > set_encoder > default
+if grep -q "diffusion_type.*ddpm" "$CONFIG_PATH" 2>/dev/null; then
+    OUTPUT_DIR="${PROJECT_DIR}/outputs_ddpm"
+elif grep -q "use_set_encoder.*true" "$CONFIG_PATH" 2>/dev/null; then
     OUTPUT_DIR="${PROJECT_DIR}/outputs_set"
 else
     OUTPUT_DIR="${PROJECT_DIR}/outputs"
