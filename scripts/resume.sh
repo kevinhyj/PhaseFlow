@@ -1,37 +1,32 @@
-#!/bin/bash
-# PhaseFlow Resume Training Script
-# 从断点恢复训练
-# 用法: bash scripts/resume.sh [gpu_id]
+#!/usr/bin/env bash
+set -euo pipefail
 
-GPU_ID=${1:-0}
-export CUDA_VISIBLE_DEVICES=$GPU_ID
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-PROJECT_DIR="/data/yanjie_huang/LLPS/predictor/PhaseFlow"
-DATA_DIR="/data/yanjie_huang/LLPS/phase_diagram"
+GPU_ID="${1:-0}"
 CHECKPOINT="${2:-outputs/run_xxx/best_model.pt}"
+CONFIG_PATH="${PHASEFLOW_CONFIG:-${PROJECT_DIR}/configs/default.yaml}"
+DATA_PATH="${PHASEFLOW_DATA_PATH:-${PROJECT_DIR}/data/phase_diagram_original_scale.csv}"
+OUTPUT_DIR="${PHASEFLOW_OUTPUT_DIR:-${PROJECT_DIR}/outputs}"
 
-# 添加PYTHONPATH
-export PYTHONPATH="${PROJECT_DIR}:${PYTHONPATH}"
+export CUDA_VISIBLE_DEVICES="$GPU_ID"
+export PYTHONPATH="${PROJECT_DIR}:${PYTHONPATH:-}"
 
 echo "========================================"
 echo "PhaseFlow Resume Training"
 echo "========================================"
-echo "GPU ID: $GPU_ID"
+echo "GPU ID:     $GPU_ID"
 echo "Checkpoint: $CHECKPOINT"
+echo "Config:     $CONFIG_PATH"
+echo "Data:       $DATA_PATH"
+echo "Output:     $OUTPUT_DIR"
 echo "========================================"
 
-cd $PROJECT_DIR
-python train/train.py \
-    --config $PROJECT_DIR/config/default.yaml \
-    --data_path $DATA_DIR/phase_diagram.csv \
-    --output_dir $PROJECT_DIR/outputs \
-    --resume $CHECKPOINT \
+cd "$PROJECT_DIR"
+python experiments/train.py \
+    --config "$CONFIG_PATH" \
+    --data_path "$DATA_PATH" \
+    --output_dir "$OUTPUT_DIR" \
+    --resume "$CHECKPOINT" \
     --device cuda \
-    --seed 42 \
-    --batch_size 64 \
-    --lr 1e-4 \
-    --epochs 100
-
-echo "========================================"
-echo "Resume training completed!"
-echo "========================================"
+    --seed 42

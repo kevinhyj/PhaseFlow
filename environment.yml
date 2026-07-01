@@ -21,6 +21,7 @@ dependencies:
     - einops>=0.6.0
     - rotary-embedding-torch>=0.8.4
     - torchdiffeq
+    - pot>=0.9.0
     - jaxtyping
     - beartype
     - typing-extensions>=4.0.0

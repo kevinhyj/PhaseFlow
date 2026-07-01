@@ -2,8 +2,8 @@
 # PhaseFlow Missing15 全权重网格训练
 # 15个组合，4个GPU并行，自动分批
 
-PROJECT_DIR="/data/yanjie_huang/LLPS/predictor/PhaseFlow"
-cd $PROJECT_DIR
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_DIR"
 
 # 定义所有配置（使用实际存在的文件名）
 declare -a CONFIGS=(
@@ -64,7 +64,7 @@ for ((i=0; i<TOTAL; i+=BATCH_SIZE)); do
 
     # 等待当前批次完成
     while true; do
-        running=$(ps aux | grep "train/train.py" | grep -v grep | wc -l)
+        running=$(ps aux | grep "experiments/train.py" | grep -v grep | wc -l)
         if [ $running -eq 0 ]; then
             break
         fi

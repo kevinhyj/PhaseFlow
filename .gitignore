@@ -63,8 +63,8 @@ nohup.out
 sliding_window_scoring/*.log
 
 # Config
-*.yaml
-!config/default.yaml
+configs/local*.yaml
+*.local.yaml
 
 # Testing
 .pytest_cache/

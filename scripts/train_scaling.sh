@@ -2,8 +2,8 @@
 # PhaseFlow Model Size Scaling - 8 GPU 并行训练
 # 8 个 scaling 配置分配到 GPU 0-7
 
-PROJECT_DIR="/data/yanjie_huang/LLPS/predictor/PhaseFlow"
-cd $PROJECT_DIR
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_DIR"
 
 declare -a CONFIGS=(
     "scale_a_dim320_d8.yaml"
@@ -41,7 +41,7 @@ echo "All $TOTAL jobs launched, monitoring..."
 echo ""
 
 while true; do
-    running=$(ps aux | grep "train/train.py" | grep -v grep | wc -l)
+    running=$(ps aux | grep "experiments/train.py" | grep -v grep | wc -l)
     if [ $running -eq 0 ]; then
         break
     fi

@@ -19,6 +19,9 @@ rotary_embedding_torch>=0.8.4
 # ODE integration for phase generation (from flow_matching)
 torchdiffeq
 
+# Optional minibatch optimal-transport coupling
+pot>=0.9.0
+
 # === OPTIONAL ENHANCEMENTS ===
 # Type hints and runtime checking
 jaxtyping

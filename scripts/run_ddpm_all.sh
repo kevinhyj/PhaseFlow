@@ -3,16 +3,19 @@
 # 4 个一批，GPU 2,4,5,6，等一批完成再跑下一批
 # 用法: nohup bash scripts/run_ddpm_all.sh > logs/run_ddpm_all.log 2>&1 &
 
-PROJECT_DIR="/data/yanjie_huang/LLPS/predictor/PhaseFlow"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_DIR"
 
-source /home/huangyanjie/miniconda3/etc/profile.d/conda.sh
-conda activate phaseflow
+if [[ -n "${PHASEFLOW_CONDA_ENV:-}" ]]; then
+    CONDA_BASE="$(conda info --base)"
+    source "${CONDA_BASE}/etc/profile.d/conda.sh"
+    conda activate "$PHASEFLOW_CONDA_ENV"
+fi
 
 export PYTHONPATH="${PROJECT_DIR}:${PYTHONPATH}"
 export PYTORCH_CUDA_ALLOC_CONF="max_split_size_mb:512"
 
-DATA_PATH="/data/yanjie_huang/LLPS/phase_diagram/phase_diagram_original_scale.csv"
+DATA_PATH="${PHASEFLOW_DATA_PATH:-${PROJECT_DIR}/data/phase_diagram_original_scale.csv}"
 LOG_DIR="${PROJECT_DIR}/logs"
 mkdir -p "$LOG_DIR"
 
@@ -72,8 +75,8 @@ while [ $i -lt $TOTAL ]; do
 
         echo "  Launch: ${cfg_name} -> GPU ${gpu}"
 
-        CUDA_VISIBLE_DEVICES=$gpu python -u train/train.py \
-            --config "config/${cfg}" \
+        CUDA_VISIBLE_DEVICES=$gpu python -u experiments/train.py \
+            --config "configs/${cfg}" \
             --data_path "$DATA_PATH" \
             --output_dir outputs_ddpm \
             --device cuda \

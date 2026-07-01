@@ -4,7 +4,10 @@ PhaseFlow: Main model combining Transformer backbone with Flow Matching / DDPM.
 
 import math
 import numpy as np
-import ot
+try:
+    import ot
+except ImportError:
+    ot = None
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -468,6 +471,10 @@ class PhaseFlow(nn.Module):
 
         # Minibatch OT coupling: re-pair x_0 with x_1 to reduce trajectory crossings
         if self.use_ot_coupling:
+            if ot is None:
+                raise ImportError(
+                    "OT coupling requires the optional POT package. Install it with `pip install pot`."
+                )
             with torch.no_grad():
                 # Only use valid (non-missing) dimensions for cost computation.
                 # For missing positions, substitute x_0 values so their contribution
