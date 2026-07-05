@@ -43,7 +43,19 @@ outputs_set_crossattn_backup/
 logs/
 visual_training/
 *.pt
+*.pth
 *.ckpt
+*.safetensors
+checkpoints/
+**/checkpoints/
+**/artifacts/model/
+**/model_cache/
+**/mlruns/
+
+# Local/Hugging Face model downloads
+models/*
+!models/.gitignore
+!models/README.md
 
 # Backup
 backup/
@@ -54,13 +66,19 @@ infer/lm_evaluation_results/
 
 # Binary / large data files
 *.npz
+*.npy
+*.h5
+*.hdf5
+*.parquet
 *.pkl
 *.pickle
 *.jsonl
+*.zip
 
 # Misc
 nohup.out
 sliding_window_scoring/*.log
+*.log.tmp
 
 # Config
 configs/local*.yaml
@@ -70,3 +88,5 @@ configs/local*.yaml
 .pytest_cache/
 .coverage
 htmlcov/
+
+.tmp/

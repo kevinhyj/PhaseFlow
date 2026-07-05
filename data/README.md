@@ -1,21 +1,15 @@
-# Data Directory
+# Data
 
-This directory is reserved for small example data and documentation of external datasets.
+This directory is reserved for datasets and generated feature stores downloaded
+from Hugging Face or produced locally.
 
-Large LLPS phase-diagram CSV/NPZ files should not be committed to this repository. Pass their
-paths explicitly to scripts, for example:
+Suggested layout:
 
-```bash
-bash scripts/train.sh \
-  --data /path/to/phase_diagram_original_scale.csv \
-  --val /path/to/val_set.csv \
-  --test /path/to/test_set.csv
+```text
+data/
+  peptide/                 Short-peptide phase-diagram CSV/NPZ data
+  full_length/             Full-length manifests, feature stores, and benchmarks
 ```
 
-Expected CSV columns:
-
-- `AminoAcidSequence`
-- `group_11` through `group_44` for the 4x4 PSSI phase diagram
-
-For missing-threshold training, place split files under `by_missing/` with names such as
-`missing_0.csv`, `missing_1.csv`, ..., `missing_15.csv`.
+Model checkpoints should not be stored here. Use `models/` for local model
+downloads.

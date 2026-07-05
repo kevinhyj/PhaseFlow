@@ -1,0 +1,198 @@
+task: dpr
+run_id: d1_flat_seed174_raw_planc_rankp257_p257_lr5e-6_50u_seed202606188
+checkpoint_path: artifacts/model/checkpoints/update_000050.pt
+checkpoint_sha256: 7fb0091e6dd5a85bd3a6be7a0b606501700c4b8f28ff9b6e309267835a2fdff0
+git_commit: null
+dataset_release:
+  candidate_index: ./data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region_candidate_index.parquet
+  candidate_index_sha256: 4f7d9a5f2cf29f419713ae98b27f03d4994ce167df061650d6c5f0f1f403817c
+  plan_yaml: ./data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region.yaml
+  plan_yaml_sha256: 30c06751828e1f0fb882ae68fa2b1e6c79eb18665d1a807e5d5773dd78109c37
+  selection_split: Plan D mixed HQ non-PhasePro validation
+audit_date: '2026-06-29'
+evidence_confidence: MIXED
+reported_metrics:
+  residue_auprc: 0.7122381456771759
+  residue_auroc: 0.6661120809627148
+  top5_enrichment: 1.812599863980843
+  region_recall_iou_0.25: 0.5804195804195804
+  region_precision_iou_0.25: 0.6384615384615384
+  iou_0.25_segment_f1: 0.6080586080586081
+  boundary_mae: 114.2403846153846
+  profile: p257
+  threshold: 0.5
+checkpoint:
+  step: 50
+  arm: d1_flat
+  format: dpr_v6_checkpoint
+  init_checkpoint: external_artifacts/overall/v6_v8r1a_region_finetune/d1_flat_seed174_raw_planc_s2s_strong_p257_lr5e-6_50u_seed202606184/checkpoints/update_000050.pt
+  init_variant: ema
+  ema_decay: 0.997
+  final_lr: 1.5e-06
+  base_lr: 5.0e-06
+input_streams:
+  esm2_dim: 1280
+  biophys_dim: 112
+  full_length_llps_hidden_dim: 256
+  phaseflow_bridge_dim: 256
+  total_scanner_input_dim: 1904
+  direct_protenix_stream: false
+  direct_starling_stream: false
+  final_phasepro_profile: artifacts/benchmarks/phasepro_fair_single_matrix_20260617_eval_v2/profiles/d1_flat_seed174_raw_planc_rankp257_p257_lr5e-6_50u_seed202606188_u0050_raw_phasepro/raw_p257_profiles.npz
+  final_validation_profile: artifacts/benchmarks/plan_d_external_val_rankp257_single_20260617/profiles/d1_flat_seed174_raw_planc_rankp257_p257_lr5e-6_50u_seed202606188_u0050_raw/p257_profiles.npz
+model:
+  arm: d1_flat
+  head_type: big
+  window_sizes:
+  - 33
+  - 129
+  - 257
+  adapter:
+    input_dim: 1904
+    hidden_dim: 256
+    output_dim: 256
+    normalization: LayerNorm before projection and after residual FFN
+    activation: GELU
+    dropout: 0.1
+    residual_path: true
+  scanner_g:
+    shared_across_windows: true
+    layers:
+    - LayerNorm(256)
+    - Linear(256,128)
+    - LeakyReLU(0.10)
+    - Dropout(0.10)
+    - Linear(128,32)
+    - LeakyReLU(0.10)
+    - Linear(32,1)
+    sigmoid_after_scanner: true
+    avgpool_before_scanner: true
+    boundary_padding: centered odd-window convolution padding, mask-normalized counts;
+      padded residues are zeroed
+    calibration_bias: none recovered beyond learned scanner bias
+    source: ./phaseflow/models/dpr_v6.py
+  multi_scale_profiles:
+    p33: masked average pooling with kernel 33 before shared scanner
+    p129: masked average pooling with kernel 129 before shared scanner
+    p257: masked average pooling with kernel 257 before shared scanner
+    window_centering: centered odd windows
+    edge_padding: zero feature padding with count normalization over valid residues
+    invalid_residue_mask: probabilities are zeroed and logits are masked at padded
+      residues
+    selection_basis: PlanD non-PhasePro validation selected raw p257
+  phaseflow_bridge:
+    tokens: 32
+    adapter_layers: 2
+    gate_init: 0.075
+    trainable: false
+    used_under_no_grad: true
+    source: ./phaseflow/models/dpr_v6.py
+  freezing_by_module:
+    full_length_LLPS_stream: frozen
+    full_length_encoder: frozen
+    ESM2_representation: frozen/offline input
+    BioPhys_projector: absent in DPR head; raw 112-d stream enters adapter
+    peptide_module_phaseflow: frozen
+    phaseflow_bridge: frozen
+    bridge_adapter: frozen
+    DPR_adapter_v6.projection: trainable
+    scanner_v6.shared_scanner: trainable
+    profile_specific_modules: absent; p33/p129/p257 share scanner
+loss:
+  objective: rank_p257
+  bag: 1.0
+  top_residue_aggregation: 0.25
+  positive_residue_bce_effective: 0.35
+  positive_residue_dice_effective: 0.06
+  strong_positive_ranking_effective: 0.75
+  weak_positive_ranking_effective: 0.1875
+  negative_top_suppression_effective: 0.35
+  topk_fraction: 0.05
+  negative_suppression_top_fraction: 0.08
+  bag_aggregation: mean of max-over-residue scores across p33/p129/p257 plus optional
+    top-fraction term
+  dice_smoothing_constant: 1.0
+  bce_positive_negative_balance: 0.5 positive BCE + 0.5 safe-background BCE inside
+    supervised_bce
+  strong_pairwise_margin: 0.18
+  weak_pairwise_margin: 0.1
+  safe_background_exclusion_radius: 17
+  strong_tiers:
+  - S1_CAUSAL_REGION
+  - S2_VALIDATED_REGION
+  - REGION_S1_S2
+  weak_tiers: []
+  negative_tiers:
+  - N2_DISORDERED_NEGATIVE
+  - N3_STRUCTURED_NEGATIVE
+optimization:
+  optimizer: AdamW
+  betas:
+  - 0.9
+  - 0.999
+  epsilon: 1.0e-08
+  weight_decay: 0.0001
+  base_lr: 5.0e-06
+  final_lr_at_update_50: 1.5e-06
+  scheduler:
+    format: dpr_v6_warmup_cosine_scheduler
+    total_updates: 50
+    warmup_updates: 0
+    min_lr_ratio: 0.3
+    last_update: 50
+  batch_size: 2
+  updates: 50
+  gradient_clip_norm: 1.0
+  precision: bf16
+  seed: 202606188
+  num_workers: 0
+  gradient_accumulation: 1
+  ema_decay: 0.997
+sampling:
+  candidate_rows: 1519
+  unique_proteins: 1483
+  tier_counts:
+    N2_DISORDERED_NEGATIVE: 1030
+    N3_STRUCTURED_NEGATIVE: 287
+    S1_CAUSAL_REGION: 56
+    S2_VALIDATED_REGION: 146
+  tier_weights:
+    S1_CAUSAL_REGION: 0.22
+    S2_VALIDATED_REGION: 0.38
+    N2_DISORDERED_NEGATIVE: 0.22
+    N3_STRUCTURED_NEGATIVE: 0.18
+  cycle_constraints:
+    max_same_canonical_protein_per_batch: 1
+    max_same_evidence_family_per_batch: 1
+  tier_order_source: plan_c_hq_region.yaml tier_weights
+  batch_construction: two samples per update sampled from weighted tier order; avoids
+    duplicate protein_id and evidence_family_id when possible
+  residue_labels: positive region tiers write region_start:region_end to residue/core
+    targets; negatives are bag-only after label clearing
+  crop_policy: no explicit crop/flank policy in final resolved config; packed sidecar
+    sample is used
+selection:
+  phasepro_used_for_selection: false
+  selection_rule: predeclared composite = 0.7*mean_percentile(AUROC,AUPRC,Spearman,median
+    per-protein Spearman) + 0.3*mean_percentile(MCC,F1), common_proteins>=min_common_proteins
+  selection_scale: p257
+  selected_variant: raw
+  validation_threshold_mcc: 0.6671476364135742
+  fixed_threshold_for_table2: 0.5
+postprocess:
+  smooth_window: 5
+  smooth_method: uniform moving average
+  smooth_padding: edge padding
+  merge_gap: 5
+  min_region_len: 6
+  threshold: 0.5
+  threshold_selection_objective: fixed 0.5 for Table 2 region calls; PlanD MCC thresholds
+    are Table 3 residue-threshold policies
+  threshold_selection_dataset: Table 2 fixed threshold uses no validation search;
+    Table 3 policies use PlanD validation
+  segment_coordinates: 0-based inclusive start/end in postprocess; manuscript display
+    may convert to 1-based.
+  segment_score: mean of top 30 percent smoothed residues inside the segment
+  iou_matching_threshold: 0.25
+  matching_definition: one-to-one segment matching in benchmark outputs; Table 3 does
+    not use segment matching
