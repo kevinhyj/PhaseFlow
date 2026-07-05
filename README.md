@@ -17,41 +17,36 @@
 
 <br>
 
-**PhaseFlow** models liquid-liquid phase separation (LLPS) across three
-biological scales. At the short-peptide scale, it learns bidirectional mappings
-between amino-acid sequences and 4x4 phase-separation score index (PSSI)
-diagrams. At the full-length protein scale, it predicts protein-level LLPS
-propensity and scans residue sequences for droplet-promoting regions (DPRs).
-At the mutation scale, it scores how amino-acid perturbations shift
-phase-separation behavior.
-
-The key design is staged transfer: PhaseFlow first learns local
-sequence-phase structure from short peptides, then transfers that knowledge to
-full-length DPR localization through an explicit bridge rather than by treating
-a full-length protein as a long peptide.
-
 ## Why Use PhaseFlow?
 
 <table>
   <tr>
     <td><b>Multi-scale LLPS modeling</b></td>
-    <td>One repository covers peptide phase diagrams, full-length LLPS prediction, DPR localization, and mutation-effect analysis.</td>
+    <td>Covers short-peptide phase diagrams, full-length protein LLPS, DPR localization, and mutation-effect scoring.</td>
   </tr>
   <tr>
     <td><b>Bidirectional peptide model</b></td>
-    <td>Short peptides support sequence-to-phase prediction and phase-conditioned sequence generation in the same Transformer framework.</td>
+    <td>Learns mappings between amino-acid sequences and 4x4 phase-separation score index (PSSI) diagrams.</td>
   </tr>
   <tr>
     <td><b>Flow Matching for phase diagrams</b></td>
-    <td>The peptide model replaces slow diffusion sampling with a Flow Matching objective for faster phase-conditioned design loops.</td>
+    <td>Supports faster phase-conditioned peptide design loops than diffusion-style sampling.</td>
   </tr>
   <tr>
-    <td><b>Full-length protein context</b></td>
-    <td>The full-length branch integrates ESM2, physicochemical, disorder, Protenix-derived, graph, and residue-context signals.</td>
+    <td><b>Full-length LLPS and DPR scanning</b></td>
+    <td>Predicts protein-level LLPS propensity and localizes droplet-promoting regions from residue context.</td>
   </tr>
   <tr>
-    <td><b>Peptide-to-protein bridge</b></td>
-    <td>Full-length residue states are compressed into 32 ordered bridge tokens, processed by the frozen peptide Transformer, and remapped to residues for DPR scanning.</td>
+    <td><b>Staged transfer bridge</b></td>
+    <td>Transfers short-peptide sequence-phase knowledge to full-length proteins through 32 ordered bridge tokens.</td>
+  </tr>
+  <tr>
+    <td><b>Mutation-effect scoring</b></td>
+    <td>Amino-acid perturbations can be scored for predicted shifts in phase-separation behavior.</td>
+  </tr>
+  <tr>
+    <td><b>Rich protein features</b></td>
+    <td>Combines ESM2, physicochemical, disorder, Protenix-derived, graph, and residue-context signals.</td>
   </tr>
   <tr>
     <td><b>Artifact-ready layout</b></td>
