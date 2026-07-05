@@ -39,6 +39,19 @@ then use those learned mappings for prediction, localization, and design.
 | ESM2, physicochemical, disorder, structure, graph, and local-context features | Multi-modal protein representations for full-length tasks |
 | Ordered bridge tokens | Transfer short-peptide sequence-phase knowledge into full-length protein modeling |
 
+## Application
+
+<p align="center">
+  <img src="figures/application.svg" alt="PhaseFlow application overview" width="980">
+</p>
+
+PhaseFlow supports a connected set of phase-separation applications: designing
+peptide sequences from target phase diagrams, predicting phase diagrams from
+candidate sequences, scanning full-length proteins for LLPS-driving regions,
+and estimating mutation effects on phase-separation behavior. These workflows
+share the same sequence-phase modeling foundation while exposing outputs that
+map naturally to peptide design, protein annotation, and mutagenesis analysis.
+
 ## Unified Model Architecture
 
 ### Short-Peptide Sequence-Phase Generator
@@ -71,40 +84,51 @@ profiles that are post-processed into droplet-promoting region calls.
 
 ## Why Use PhaseFlow?
 
+You should consider PhaseFlow when your phase-separation workflow needs:
+
 <table>
   <tr>
+    <td align="center">🧬</td>
     <td><b>Unified multi-modal generative model</b></td>
     <td>Brings sequence, phase-diagram, residue-context, structure-derived, graph, LLPS, DPR, and mutation-effect signals into one PhaseFlow workflow.</td>
   </tr>
   <tr>
+    <td align="center">🧪</td>
     <td><b>Multi-scale LLPS modeling</b></td>
     <td>Covers short-peptide phase diagrams, full-length protein LLPS, DPR localization, and mutation-effect scoring.</td>
   </tr>
   <tr>
+    <td align="center">🔁</td>
     <td><b>Bidirectional peptide model</b></td>
     <td>Learns mappings between amino-acid sequences and 4x4 phase-separation score index (PSSI) diagrams.</td>
   </tr>
   <tr>
+    <td align="center">⚡</td>
     <td><b>Flow Matching for phase diagrams</b></td>
     <td>Supports faster phase-conditioned peptide design loops than diffusion-style sampling.</td>
   </tr>
   <tr>
+    <td align="center">🔎</td>
     <td><b>Full-length LLPS and DPR scanning</b></td>
     <td>Predicts protein-level LLPS propensity and localizes droplet-promoting regions from residue context.</td>
   </tr>
   <tr>
+    <td align="center">🌉</td>
     <td><b>Staged transfer bridge</b></td>
     <td>Transfers short-peptide sequence-phase knowledge to full-length proteins through 32 ordered bridge tokens.</td>
   </tr>
   <tr>
+    <td align="center">🧫</td>
     <td><b>Mutation-effect scoring</b></td>
     <td>Amino-acid perturbations can be scored for predicted shifts in phase-separation behavior.</td>
   </tr>
   <tr>
+    <td align="center">🧠</td>
     <td><b>Rich protein features</b></td>
     <td>Combines ESM2, physicochemical, disorder, Protenix-derived, graph, and residue-context signals.</td>
   </tr>
   <tr>
+    <td align="center">📦</td>
     <td><b>Artifact-ready layout</b></td>
     <td>Code, configs, docs, figures, local datasets, and local model downloads are separated so GitHub stays lightweight while Hugging Face artifacts can be added cleanly.</td>
   </tr>
@@ -128,11 +152,6 @@ useful as a project entry point; detailed provenance remains in
 | DPR localization | PhasePro, p257 readout | residue AUPRC 0.712, top-5 enrichment 1.813 |
 | DPR region calling | IoU 0.25 region matching | recall 0.580, precision 0.638, segment F1 0.608 |
 | Mutation effects | TDP-43 point-mutation panels | strongest average ranking/classification metrics among compared methods in the included benchmark summary |
-
-<p align="center">
-  <a href="#quick-start"><img src="https://img.shields.io/badge/Run%20PhaseFlow-Quick%20Start-0A66C2?style=for-the-badge" alt="Run PhaseFlow: Quick Start"></a>
-  <a href="#installation"><img src="https://img.shields.io/badge/Setup-Installation-16A5A8?style=for-the-badge" alt="Setup: Installation"></a>
-</p>
 
 <br>
 
@@ -159,12 +178,13 @@ useful as a project entry point; detailed provenance remains in
 
 <br>
 
-- [Quick Start](#quick-start)
 - [Model Overview](#model-overview)
+- [Application](#application)
 - [Unified Model Architecture](#unified-model-architecture)
 - [Why Use PhaseFlow?](#why-use-phaseflow)
 - [Key Results](#key-results)
 - [Key Modules](#key-modules)
+- [Quick Start](#quick-start)
 - [Installation](#installation)
 - [Repository Layout](#repository-layout)
 - [Models And Datasets](#models-and-datasets)
