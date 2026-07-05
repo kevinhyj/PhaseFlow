@@ -1,4 +1,4 @@
-# PhaseFlow: Multi-Scale Modeling and Design of Phase-Separating Proteins
+# PhaseFlow: A Unified Multi-Modal Generative Model for Phase-Separating Proteins
 
 <div align="center">
   <img src="figures/PhaseFlow.png" alt="PhaseFlow" width="900">
@@ -13,13 +13,69 @@
 
 </div>
 
-<div align="center"><i>A unified PhaseFlow codebase for peptide phase diagrams, full-length LLPS prediction, DPR localization, and mutation-effect scoring.</i></div>
+<div align="center"><i>A unified multi-modal generative model that connects amino-acid sequences, phase diagrams, residue context, structure-derived features, protein graphs, LLPS propensity, DPR localization, and mutation-effect scoring.</i></div>
+
+<br>
+
+<p align="center">
+  <a href="#quick-start"><img src="https://img.shields.io/badge/Get%20Started-Quick%20Start-0A66C2?style=for-the-badge" alt="Get Started: Quick Start"></a>
+  <a href="#installation"><img src="https://img.shields.io/badge/Install-PhaseFlow-16A5A8?style=for-the-badge" alt="Install PhaseFlow"></a>
+</p>
+
+<br>
+
+## Model Overview
+
+PhaseFlow is organized around one modeling goal: learn how sequence-level,
+phase-diagram, and protein-context signals map into phase-separation behavior,
+then use those learned mappings for prediction, localization, and design.
+
+| Signal family | Role in PhaseFlow |
+| --- | --- |
+| Peptide sequence tokens | Sequence-to-phase prediction and phase-conditioned sequence generation |
+| 4x4 PSSI phase diagrams | Compact representation of phase-separation score landscapes |
+| Flow Matching and causal language modeling | Fast phase-diagram regression and target-conditioned peptide design |
+| Full-length residue context | Protein-level LLPS prediction and residue-level DPR scanning |
+| ESM2, physicochemical, disorder, structure, graph, and local-context features | Multi-modal protein representations for full-length tasks |
+| Ordered bridge tokens | Transfer short-peptide sequence-phase knowledge into full-length protein modeling |
+
+## Unified Model Architecture
+
+### Short-Peptide Sequence-Phase Generator
+
+<p align="center">
+  <img src="figures/peptide/architecture-peptide-complete.svg" alt="Short-peptide PhaseFlow architecture" width="900">
+</p>
+
+The short-peptide module is the bidirectional sequence-phase model. For
+sequence-to-phase prediction, peptide tokens and phase-grid tokens pass through
+shared Transformer blocks and a Flow Matching velocity head to predict a 4x4
+PSSI diagram. For phase-to-sequence design, the same architecture conditions on
+the target phase diagram and uses causal language modeling to generate peptide
+sequences.
+
+### Full-Length Protein LLPS And DPR Model
+
+<p align="center">
+  <img src="figures/full_length/structure-full-length.svg" alt="Full-length PhaseFlow architecture" width="960">
+</p>
+
+The full-length module handles protein-scale context separately from the
+short-peptide task. It combines residue-level ESM2, physicochemical, disorder,
+structure-derived, graph, and local-context features, then bridges peptide
+sequence-phase knowledge through ordered bridge tokens and residue-query
+cross-attention. The outputs are protein-level LLPS probability and DPR scanner
+profiles that are post-processed into droplet-promoting region calls.
 
 <br>
 
 ## Why Use PhaseFlow?
 
 <table>
+  <tr>
+    <td><b>Unified multi-modal generative model</b></td>
+    <td>Brings sequence, phase-diagram, residue-context, structure-derived, graph, LLPS, DPR, and mutation-effect signals into one PhaseFlow workflow.</td>
+  </tr>
   <tr>
     <td><b>Multi-scale LLPS modeling</b></td>
     <td>Covers short-peptide phase diagrams, full-length protein LLPS, DPR localization, and mutation-effect scoring.</td>
@@ -56,6 +112,30 @@
 
 <br>
 
+## Key Results
+
+The values below are summarized from the tracked configs, audit reports, and
+figure artifacts in this repository. They are included to make the README
+useful as a project entry point; detailed provenance remains in
+`configs/full_length/` and `docs/full_length/final/`.
+
+| Task | Evaluation setting | PhaseFlow result |
+| --- | --- | --- |
+| Full-length LLPS | PPMC full panel | AUPRC 0.752, AUROC 0.874 |
+| Full-length LLPS | threshold 0.5 | MCC 0.549, F1 0.676 |
+| Peptide phase prediction | complete held-out peptide diagrams | Spearman 0.4168, Pearson 0.4219, MSE 0.5652 |
+| Flow Matching vs DDPM | matched peptide phase-grid comparison | mean Spearman 0.559 vs 0.277; MSE 0.570 vs 1.315 |
+| DPR localization | PhasePro, p257 readout | residue AUPRC 0.712, top-5 enrichment 1.813 |
+| DPR region calling | IoU 0.25 region matching | recall 0.580, precision 0.638, segment F1 0.608 |
+| Mutation effects | TDP-43 point-mutation panels | strongest average ranking/classification metrics among compared methods in the included benchmark summary |
+
+<p align="center">
+  <a href="#quick-start"><img src="https://img.shields.io/badge/Run%20PhaseFlow-Quick%20Start-0A66C2?style=for-the-badge" alt="Run PhaseFlow: Quick Start"></a>
+  <a href="#installation"><img src="https://img.shields.io/badge/Setup-Installation-16A5A8?style=for-the-badge" alt="Setup: Installation"></a>
+</p>
+
+<br>
+
 ## Key Modules
 
 | Module | Path | Description |
@@ -80,6 +160,11 @@
 <br>
 
 - [Quick Start](#quick-start)
+- [Model Overview](#model-overview)
+- [Unified Model Architecture](#unified-model-architecture)
+- [Why Use PhaseFlow?](#why-use-phaseflow)
+- [Key Results](#key-results)
+- [Key Modules](#key-modules)
 - [Installation](#installation)
 - [Repository Layout](#repository-layout)
 - [Models And Datasets](#models-and-datasets)
@@ -88,7 +173,6 @@
 - [Evaluation And Checks](#evaluation-and-checks)
 - [Input And Output Formats](#input-and-output-formats)
 - [Artifact Policy](#artifact-policy)
-- [Key Results](#key-results)
 - [Figures](#figures)
 - [Citation](#citation)
 - [License](#license)
@@ -376,50 +460,7 @@ The repository `.gitignore` excludes common checkpoint formats such as `.pt`,
 `.pth`, `.ckpt`, and `.safetensors`, and also ignores local model files under
 `artifacts/models/`.
 
-## Key Results
-
-The values below are summarized from the tracked configs, audit reports, and
-figure artifacts in this repository. They are included to make the README
-useful as a project entry point; detailed provenance remains in
-`configs/full_length/` and `docs/full_length/final/`.
-
-| Task | Evaluation setting | PhaseFlow result |
-| --- | --- | --- |
-| Full-length LLPS | PPMC full panel | AUPRC 0.752, AUROC 0.874 |
-| Full-length LLPS | threshold 0.5 | MCC 0.549, F1 0.676 |
-| Peptide phase prediction | complete held-out peptide diagrams | Spearman 0.4168, Pearson 0.4219, MSE 0.5652 |
-| Flow Matching vs DDPM | matched peptide phase-grid comparison | mean Spearman 0.559 vs 0.277; MSE 0.570 vs 1.315 |
-| DPR localization | PhasePro, p257 readout | residue AUPRC 0.712, top-5 enrichment 1.813 |
-| DPR region calling | IoU 0.25 region matching | recall 0.580, precision 0.638, segment F1 0.608 |
-| Mutation effects | TDP-43 point-mutation panels | strongest average ranking/classification metrics among compared methods in the included benchmark summary |
-
 ## Figures
-
-### Short-Peptide Architecture
-
-<p align="center">
-  <img src="figures/peptide/architecture-peptide-complete.svg" alt="Short-peptide PhaseFlow architecture" width="900">
-</p>
-
-The short-peptide module is the bidirectional sequence-phase model. For
-sequence-to-phase prediction, peptide tokens and phase-grid tokens pass through
-shared Transformer blocks and a Flow Matching velocity head to predict a 4x4
-PSSI diagram. For phase-to-sequence design, the same architecture conditions on
-the target phase diagram and uses causal language modeling to generate peptide
-sequences.
-
-### Full-Length Protein Architecture
-
-<p align="center">
-  <img src="figures/full_length/structure-full-length.svg" alt="Full-length PhaseFlow architecture" width="960">
-</p>
-
-The full-length module handles protein-scale context separately from the
-short-peptide task. It combines residue-level ESM2, physicochemical, disorder,
-structure-derived, graph, and local-context features, then bridges peptide
-sequence-phase knowledge through ordered bridge tokens and residue-query
-cross-attention. The outputs are protein-level LLPS probability and DPR scanner
-profiles that are post-processed into droplet-promoting region calls.
 
 ### Full-Length LLPS
 
