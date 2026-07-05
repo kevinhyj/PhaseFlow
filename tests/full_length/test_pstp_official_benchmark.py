@@ -8,7 +8,7 @@ import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DATA_ROOT = ROOT / "data/processed/evaluation/phasepro_official_v1"
+DATA_ROOT = ROOT / "artifacts/data/processed/evaluation/phasepro_official_v1"
 OUT_ROOT = ROOT / "external_artifacts/pstp_official_benchmark_v1"
 
 

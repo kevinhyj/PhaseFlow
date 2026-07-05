@@ -4,9 +4,9 @@ checkpoint_path: artifacts/model/checkpoints/update_000050.pt
 checkpoint_sha256: 7fb0091e6dd5a85bd3a6be7a0b606501700c4b8f28ff9b6e309267835a2fdff0
 git_commit: null
 dataset_release:
-  candidate_index: ./data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region_candidate_index.parquet
+  candidate_index: ./artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region_candidate_index.parquet
   candidate_index_sha256: 4f7d9a5f2cf29f419713ae98b27f03d4994ce167df061650d6c5f0f1f403817c
-  plan_yaml: ./data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region.yaml
+  plan_yaml: ./artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region.yaml
   plan_yaml_sha256: 30c06751828e1f0fb882ae68fa2b1e6c79eb18665d1a807e5d5773dd78109c37
   selection_split: Plan D mixed HQ non-PhasePro validation
 audit_date: '2026-06-29'
@@ -70,7 +70,7 @@ model:
     boundary_padding: centered odd-window convolution padding, mask-normalized counts;
       padded residues are zeroed
     calibration_bias: none recovered beyond learned scanner bias
-    source: ./phaseflow/models/dpr_v6.py
+    source: ./phaseflow/full_length/models/dpr_v6.py
   multi_scale_profiles:
     p33: masked average pooling with kernel 33 before shared scanner
     p129: masked average pooling with kernel 129 before shared scanner
@@ -86,7 +86,7 @@ model:
     gate_init: 0.075
     trainable: false
     used_under_no_grad: true
-    source: ./phaseflow/models/dpr_v6.py
+    source: ./phaseflow/full_length/models/dpr_v6.py
   freezing_by_module:
     full_length_LLPS_stream: frozen
     full_length_encoder: frozen

@@ -11,9 +11,9 @@ import numpy as np
 
 def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build final stratified DPR region targets from teacher profiles.")
-    parser.add_argument("--teacher-scores", default="data/pseudo_labels/round0_external/teacher_scores.h5")
-    parser.add_argument("--out", default="data/processed/final_region_targets.h5")
-    parser.add_argument("--report", default="data/processed/final_region_targets_report.json")
+    parser.add_argument("--teacher-scores", default="artifacts/data/pseudo_labels/round0_external/teacher_scores.h5")
+    parser.add_argument("--out", default="artifacts/data/processed/final_region_targets.h5")
+    parser.add_argument("--report", default="artifacts/data/processed/final_region_targets_report.json")
     parser.add_argument("--feature-dir", action="append", default=[])
     parser.add_argument(
         "--policy",

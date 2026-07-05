@@ -64,7 +64,7 @@ for ((i=0; i<TOTAL; i+=BATCH_SIZE)); do
 
     # 等待当前批次完成
     while true; do
-        running=$(ps aux | grep "experiments/peptide/train.py" | grep -v grep | wc -l)
+        running=$(ps aux | grep "research/peptide/experiments/train.py" | grep -v grep | wc -l)
         if [ $running -eq 0 ]; then
             break
         fi

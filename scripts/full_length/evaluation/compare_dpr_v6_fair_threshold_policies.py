@@ -49,8 +49,8 @@ DEFAULT_DPR_VAL = (
 DEFAULT_PSTP_PHASEPRO = ROOT / "external_artifacts/pstp_official_benchmark_v1/profiles/pstp_nophasepro/selected_family_p33_profiles.npz"
 DEFAULT_PSTP_VAL = ROOT / "artifacts/benchmarks/plan_d_external_val/profiles/pstp_nophasepro/p33_profiles.npz"
 DEFAULT_VALIDATION_SUMMARY = ROOT / "artifacts/benchmarks/plan_d_external_val/validation_selection_summary.json"
-DEFAULT_PHASEPRO_DATA = ROOT / "data/processed/evaluation/phasepro_official_v1"
-DEFAULT_PLAN_D_VAL = ROOT / "data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_d_mixed_hq_val_candidate_index.parquet"
+DEFAULT_PHASEPRO_DATA = ROOT / "artifacts/data/processed/evaluation/phasepro_official_v1"
+DEFAULT_PLAN_D_VAL = ROOT / "artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_d_mixed_hq_val_candidate_index.parquet"
 DEFAULT_OUT = ROOT / "artifacts/benchmarks/phasepro_fair_threshold_policy_compare"
 
 

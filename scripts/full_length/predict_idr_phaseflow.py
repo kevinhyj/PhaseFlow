@@ -5,7 +5,7 @@ PhaseFlow 滑动窗口预测脚本
 
 Usage:
     python scripts/full_length/predict_idr_phaseflow.py
-    python scripts/full_length/predict_idr_phaseflow.py --input data/full_length/idr_sequences.xlsx --output runs/idp_phaseflow_profiles.jsonl
+    python scripts/full_length/predict_idr_phaseflow.py --input artifacts/data/full_length/idr_sequences.xlsx --output runs/idp_phaseflow_profiles.jsonl
 """
 
 import argparse
@@ -54,7 +54,7 @@ def read_sequences_from_excel(excel_path: str | Path) -> list[dict]:
 
 def main():
     parser = argparse.ArgumentParser(description='PhaseFlow 滑动窗口预测 IDR 序列相位图')
-    parser.add_argument('--input', type=str, default='data/full_length/idr_sequences.xlsx',
+    parser.add_argument('--input', type=str, default='artifacts/data/full_length/idr_sequences.xlsx',
                         help='输入 Excel 文件路径')
     parser.add_argument('--output', type=str, default='runs/idp_phaseflow_profiles.jsonl',
                         help='输出 JSONL 文件路径')

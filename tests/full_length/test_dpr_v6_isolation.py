@@ -27,6 +27,6 @@ def test_v6_files_do_not_reference_v5_head_resume_or_region_global_logits() -> N
 def test_v6_uses_own_namespace_paths() -> None:
     cfg = (ROOT / "configs/full_length/final_dpr.yaml").read_text(encoding="utf-8")
     assert "artifacts/model/checkpoints/update_000050.pt" in cfg
-    assert "data/processed/stage2/dpr_v8r1a" in cfg
+    assert "artifacts/data/processed/stage2/dpr_v8r1a" in cfg
     assert "external_artifacts/overall/v6_v8r1a_region_finetune" in cfg
     assert ("outputs" + "/") not in cfg

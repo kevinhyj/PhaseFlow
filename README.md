@@ -66,11 +66,11 @@
 | Full-length configs | `configs/full_length/` | Final LLPS and DPR configuration summaries |
 | Peptide scripts | `scripts/peptide/` | Training, inference, resume, and experiment launchers |
 | Full-length scripts | `scripts/full_length/` | Data construction, teacher wrappers, training, evaluation, and benchmark utilities |
-| Examples | `examples/peptide/` | Small peptide demo inputs and phase-to-sequence example |
+| Examples | `examples/` | Small peptide demo inputs and phase-to-sequence example |
 | Tests | `tests/` | Peptide smoke tests and focused full-length tests |
 | Figures | `figures/` | Curated README and paper-result figures |
-| Local data | `data/` | Placeholder for datasets and feature stores downloaded from Hugging Face |
-| Local models | `models/` | Placeholder for model checkpoints downloaded from Hugging Face |
+| Research workflows | `research/` | Short-peptide experiments and analysis scripts |
+| Local artifacts | `artifacts/` | Placeholder for local datasets, model downloads, and curated result artifacts |
 
 <br>
 
@@ -116,20 +116,20 @@ Download models and datasets after the Hugging Face release:
 
 ```bash
 huggingface-cli download <org/phaseflow-peptide-model> \
-  --local-dir models/peptide
+  --local-dir artifacts/models/peptide
 
 huggingface-cli download <org/phaseflow-peptide-data> \
   --repo-type dataset \
-  --local-dir data/peptide
+  --local-dir artifacts/data/peptide
 ```
 
 Run peptide sequence-to-phase inference:
 
 ```bash
 bash scripts/peptide/infer.sh \
-  models/peptide/best_model.pt \
-  examples/peptide/sequences.txt \
-  results/peptide/predicted_phases.csv \
+  artifacts/models/peptide/best_model.pt \
+  examples/sequences.txt \
+  artifacts/results/peptide/predicted_phases.csv \
   0
 ```
 
@@ -169,22 +169,20 @@ phaseflow/                 Short-peptide package and full_length subpackage
 phaseflow/full_length/     Full-length LLPS, DPR, feature, metric, and training code
 configs/peptide/           Short-peptide configs
 configs/full_length/       Final full-length LLPS and DPR configs
-data/peptide/              Local peptide datasets and data notes
-data/full_length/          Local full-length datasets, features, and benchmark inputs
-models/                    Local model checkpoints downloaded from Hugging Face
 docs/peptide/              Short-peptide documentation
 docs/full_length/          Full-length documentation and audit reports
 scripts/peptide/           Short-peptide training and inference launchers
 scripts/full_length/       Full-length data, training, evaluation, and teacher scripts
 tests/peptide/             Short-peptide smoke tests
 tests/full_length/         Full-length focused tests
-examples/peptide/          Short-peptide demo inputs
-experiments/peptide/       Short-peptide training/evaluation entry points
-analyses/peptide/          Short-peptide analysis scripts and curated outputs
+examples/                  Short-peptide demo inputs
+research/peptide/experiments/  Short-peptide training/evaluation entry points
+research/peptide/analyses/     Short-peptide analysis scripts and curated outputs
 figures/peptide/           Short-peptide figures
 figures/full_length/       Full-length LLPS/DPR figures
-results/peptide/           Lightweight curated peptide result artifacts
-archive/peptide/           Historical peptide artifacts retained for provenance
+artifacts/data/            Local datasets and generated feature stores
+artifacts/models/          Local model checkpoints downloaded from Hugging Face
+artifacts/results/         Lightweight curated result artifacts
 ```
 
 ## Models And Datasets
@@ -194,10 +192,10 @@ Large artifacts are intentionally separated from the source repository.
 Suggested local layout:
 
 ```text
-data/
+artifacts/data/
   peptide/                 Phase-diagram CSV/NPZ data and split files
   full_length/             Manifests, feature stores, benchmark inputs
-models/
+artifacts/models/
   peptide/                 Short-peptide PhaseFlow checkpoints
   full_length/
     llps/                  Full-length LLPS checkpoints
@@ -209,25 +207,25 @@ Planned download pattern after release:
 ```bash
 huggingface-cli download <org/phaseflow-peptide-data> \
   --repo-type dataset \
-  --local-dir data/peptide
+  --local-dir artifacts/data/peptide
 
 huggingface-cli download <org/phaseflow-full-length-data> \
   --repo-type dataset \
-  --local-dir data/full_length
+  --local-dir artifacts/data/full_length
 
 huggingface-cli download <org/phaseflow-peptide-model> \
-  --local-dir models/peptide
+  --local-dir artifacts/models/peptide
 
 huggingface-cli download <org/phaseflow-full-length-models> \
-  --local-dir models/full_length
+  --local-dir artifacts/models/full_length
 ```
 
 | Resource | Local target | Status |
 | --- | --- | --- |
-| Peptide phase-diagram data | `data/peptide/` | Hugging Face release pending |
-| Full-length feature/data bundle | `data/full_length/` | Hugging Face release pending |
-| Peptide model checkpoint | `models/peptide/` | Hugging Face release pending |
-| Full-length LLPS and DPR checkpoints | `models/full_length/` | Hugging Face release pending |
+| Peptide phase-diagram data | `artifacts/data/peptide/` | Hugging Face release pending |
+| Full-length feature/data bundle | `artifacts/data/full_length/` | Hugging Face release pending |
+| Peptide model checkpoint | `artifacts/models/peptide/` | Hugging Face release pending |
+| Full-length LLPS and DPR checkpoints | `artifacts/models/full_length/` | Hugging Face release pending |
 
 ## Short-Peptide Usage
 
@@ -236,7 +234,7 @@ huggingface-cli download <org/phaseflow-full-length-models> \
 ```bash
 bash scripts/peptide/train.sh \
   --config configs/peptide/default.yaml \
-  --data data/peptide/phase_diagram_original_scale.csv \
+  --data artifacts/data/peptide/phase_diagram_original_scale.csv \
   --output-dir outputs/peptide \
   --gpu 0 \
   --foreground
@@ -246,34 +244,34 @@ bash scripts/peptide/train.sh \
 
 ```bash
 bash scripts/peptide/infer.sh \
-  models/peptide/best_model.pt \
-  examples/peptide/sequences.txt \
-  results/peptide/predicted_phases.csv \
+  artifacts/models/peptide/best_model.pt \
+  examples/sequences.txt \
+  artifacts/results/peptide/predicted_phases.csv \
   0
 ```
 
 ### Generate sequences from target phase diagrams
 
 ```bash
-python examples/peptide/phase2seq_demo.py \
-  --checkpoint models/peptide/best_model.pt \
-  --input_csv data/peptide/test_set.csv \
+python examples/phase2seq_demo.py \
+  --checkpoint artifacts/models/peptide/best_model.pt \
+  --input_csv artifacts/data/peptide/test_set.csv \
   --num_samples 5
 ```
 
 ### Evaluate peptide models
 
 ```bash
-python experiments/peptide/evaluate_seq2phase.py \
-  --test_path data/peptide/test_set.csv \
+python research/peptide/experiments/evaluate_seq2phase.py \
+  --test_path artifacts/data/peptide/test_set.csv \
   --models_dir outputs/peptide
 ```
 
 ## Full-Length Usage
 
 The full-length code is packaged under `phaseflow.full_length`. It expects
-downloaded model checkpoints and feature/data bundles under `models/full_length/`
-and `data/full_length/`.
+downloaded model checkpoints and feature/data bundles under `artifacts/models/full_length/`
+and `artifacts/data/full_length/`.
 
 Final released configuration summaries:
 
@@ -284,10 +282,10 @@ Final released configuration summaries:
 
 ```bash
 python scripts/full_length/predict_idr_phaseflow.py \
-  --input data/full_length/idr_sequences.xlsx \
-  --checkpoint models/peptide/best_model.pt \
-  --output results/full_length/idr_phaseflow_profiles.jsonl \
-  --csv results/full_length/idr_phaseflow_profiles.csv
+  --input artifacts/data/full_length/idr_sequences.xlsx \
+  --checkpoint artifacts/models/peptide/best_model.pt \
+  --output artifacts/results/full_length/idr_phaseflow_profiles.jsonl \
+  --csv artifacts/results/full_length/idr_phaseflow_profiles.csv
 ```
 
 ### DPR training entry point
@@ -315,7 +313,7 @@ python scripts/full_length/generate_tables_pdf.py --task all
 Short-peptide checks:
 
 ```bash
-python -m compileall phaseflow experiments/peptide analyses/peptide examples/peptide tests/peptide
+python -m compileall phaseflow research/peptide/experiments research/peptide/analyses examples tests/peptide
 python -m unittest discover tests/peptide
 ```
 
@@ -370,13 +368,13 @@ training logs, or large runtime outputs.
 
 Local artifact paths:
 
-- `data/peptide/` and `data/full_length/` for datasets and feature stores.
-- `models/peptide/` and `models/full_length/` for Hugging Face model downloads.
+- `artifacts/data/peptide/` and `artifacts/data/full_length/` for datasets and feature stores.
+- `artifacts/models/peptide/` and `artifacts/models/full_length/` for Hugging Face model downloads.
 - `outputs/` and `logs/` for regenerated training or inference outputs.
 
 The repository `.gitignore` excludes common checkpoint formats such as `.pt`,
 `.pth`, `.ckpt`, and `.safetensors`, and also ignores local model files under
-`models/`.
+`artifacts/models/`.
 
 ## Key Results
 
@@ -397,16 +395,31 @@ useful as a project entry point; detailed provenance remains in
 
 ## Figures
 
-### Architecture
+### Short-Peptide Architecture
 
 <p align="center">
-  <img src="figures/peptide/architecture.svg" alt="PhaseFlow peptide architecture" width="860">
+  <img src="figures/peptide/architecture-peptide-complete.svg" alt="Short-peptide PhaseFlow architecture" width="900">
 </p>
 
-The peptide module uses a 6-layer Transformer with 32 sequence tokens and 16
-phase-grid tokens. The full-length module reuses the peptide Transformer through
-an ordered bridge and residue-query cross-attention, while preserving a
-dedicated full-length encoder for protein-scale context.
+The short-peptide module is the bidirectional sequence-phase model. For
+sequence-to-phase prediction, peptide tokens and phase-grid tokens pass through
+shared Transformer blocks and a Flow Matching velocity head to predict a 4x4
+PSSI diagram. For phase-to-sequence design, the same architecture conditions on
+the target phase diagram and uses causal language modeling to generate peptide
+sequences.
+
+### Full-Length Protein Architecture
+
+<p align="center">
+  <img src="figures/full_length/structure-full-length.svg" alt="Full-length PhaseFlow architecture" width="960">
+</p>
+
+The full-length module handles protein-scale context separately from the
+short-peptide task. It combines residue-level ESM2, physicochemical, disorder,
+structure-derived, graph, and local-context features, then bridges peptide
+sequence-phase knowledge through ordered bridge tokens and residue-query
+cross-attention. The outputs are protein-level LLPS probability and DPR scanner
+profiles that are post-processed into droplet-promoting region calls.
 
 ### Full-Length LLPS
 

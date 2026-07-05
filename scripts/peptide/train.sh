@@ -5,7 +5,7 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 DEFAULT_GPU=0
 DEFAULT_CONFIG="configs/peptide/default.yaml"
-DEFAULT_DATA_PATH="${PHASEFLOW_DATA_PATH:-${PROJECT_DIR}/data/peptide/phase_diagram_original_scale.csv}"
+DEFAULT_DATA_PATH="${PHASEFLOW_DATA_PATH:-${PROJECT_DIR}/artifacts/data/peptide/phase_diagram_original_scale.csv}"
 DEFAULT_OUTPUT_DIR="${PROJECT_DIR}/outputs"
 DEFAULT_MISSING_THRESHOLD="-1"
 
@@ -29,7 +29,7 @@ show_help() {
     echo "Options:"
     echo "  -g, --gpu ID              GPU ID (default: ${DEFAULT_GPU})"
     echo "  -c, --config PATH         Config path or name under configs/peptide/ (default: ${DEFAULT_CONFIG})"
-    echo "  -d, --data PATH           Training CSV (default: PHASEFLOW_DATA_PATH or data/peptide/phase_diagram_original_scale.csv)"
+    echo "  -d, --data PATH           Training CSV (default: PHASEFLOW_DATA_PATH or artifacts/data/peptide/phase_diagram_original_scale.csv)"
     echo "      --val PATH            Optional validation CSV"
     echo "      --test PATH           Optional test CSV"
     echo "  -o, --output-dir PATH     Output directory (default: outputs/)"
@@ -170,9 +170,9 @@ echo "========================================"
 
 cd "$PROJECT_DIR"
 if "$FOREGROUND"; then
-    python -u experiments/peptide/train.py "${TRAIN_ARGS[@]}" 2>&1 | tee "$LOG_FILE"
+    python -u research/peptide/experiments/train.py "${TRAIN_ARGS[@]}" 2>&1 | tee "$LOG_FILE"
 else
-    nohup python -u experiments/peptide/train.py "${TRAIN_ARGS[@]}" >> "$LOG_FILE" 2>&1 &
+    nohup python -u research/peptide/experiments/train.py "${TRAIN_ARGS[@]}" >> "$LOG_FILE" 2>&1 &
     PID=$!
     echo "Training started in background"
     echo "PID: $PID"

@@ -77,8 +77,8 @@ scripts/full_length/training/run_dpr_v6.py
 - `--arm d1_flat`
 - `--init-checkpoint .../d1_flat_seed174_raw_planc_s2s_strong_p257_lr5e-6_50u_seed202606184/checkpoints/update_000050.pt`
 - `--init-variant ema`
-- `--candidate-index data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region_candidate_index.parquet`
-- `--plan-yaml data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region.yaml`
+- `--candidate-index artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region_candidate_index.parquet`
+- `--plan-yaml artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region.yaml`
 - `--run-name d1_flat_seed174_raw_planc_rankp257_p257_lr5e-6_50u_seed202606188`
 - `--updates 50`
 - `--batch-size 2`
@@ -139,8 +139,8 @@ paper/full_length/audit/evidence/dpr/training__finetune_dpr_v6_v8r1a_region.py
 最终 rank_p257 训练使用:
 
 ```text
-data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region_candidate_index.parquet
-data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region.yaml
+artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region_candidate_index.parquet
+artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region.yaml
 ```
 
 输入审计结果:
@@ -160,8 +160,8 @@ data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region.yaml
 上游 75u 训练使用:
 
 ```text
-data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_d_mixed_hq_train_candidate_index.parquet
-data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_d_mixed_hq_train.yaml
+artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_d_mixed_hq_train_candidate_index.parquet
+artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_d_mixed_hq_train.yaml
 ```
 
 输入审计结果:
@@ -217,7 +217,7 @@ data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_d_mixed_hq_train.yaml
 实现位置:
 
 ```text
-phaseflow/models/dpr_v6.py
+phaseflow/full_length/models/dpr_v6.py
 ```
 
 关键约束:
@@ -238,7 +238,7 @@ PhaseFlow 接入来源:
 实现位置:
 
 ```text
-phaseflow/models/dpr_v6.py
+phaseflow/full_length/models/dpr_v6.py
 ```
 
 `strong_p257` 的组成:
@@ -424,7 +424,7 @@ artifacts/model/
 
 - `configs/full_length/final_dpr.yaml`
 - `artifacts/model/configs/resolved_finetune_config.json`
-- `phaseflow/models/dpr_v6.py`
+- `phaseflow/full_length/models/dpr_v6.py`
 - `scripts/full_length/training/run_dpr_v6.py`
 - `scripts/full_length/evaluation/select_dpr_v6_plan_d_composite.py`
 - `scripts/full_length/evaluation/compare_dpr_v6_plan_d_phasepro_final.py`

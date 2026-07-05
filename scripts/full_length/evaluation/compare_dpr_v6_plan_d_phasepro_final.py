@@ -50,7 +50,7 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=ROOT / "external_artifacts/pstp_official_benchmark_v1/profiles/pstp_nophasepro/selected_family_p33_profiles.npz",
     )
-    parser.add_argument("--data-root", type=Path, default=ROOT / "data/processed/evaluation/phasepro_official_v1")
+    parser.add_argument("--data-root", type=Path, default=ROOT / "artifacts/data/processed/evaluation/phasepro_official_v1")
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--best-n", type=int, default=12)
     parser.add_argument("--worst-n", type=int, default=12)

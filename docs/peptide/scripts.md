@@ -26,7 +26,7 @@ Useful options:
 | `--threshold` | Missing-value threshold for `by_missing/missing_*.csv` datasets |
 | `--foreground` | Run in foreground instead of `nohup` background mode |
 
-If `--val` and `--test` are omitted, `experiments/peptide/train.py` creates train/val/test splits from
+If `--val` and `--test` are omitted, `research/peptide/experiments/train.py` creates train/val/test splits from
 `--data`.
 
 ## Resume Training
@@ -46,10 +46,10 @@ Environment overrides:
 ## Seq2Phase Inference
 
 ```bash
-bash scripts/peptide/infer.sh outputs/run_xxx/best_model.pt examples/peptide/sequences.txt results/peptide/predicted_phases.csv 0
+bash scripts/peptide/infer.sh outputs/run_xxx/best_model.pt examples/sequences.txt artifacts/results/peptide/predicted_phases.csv 0
 ```
 
-The underlying Python entrypoint is `experiments/peptide/predict_seq2phase.py`.
+The underlying Python entrypoint is `research/peptide/experiments/predict_seq2phase.py`.
 
 ## Batch Experiments
 

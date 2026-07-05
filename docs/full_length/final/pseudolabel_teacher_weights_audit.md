@@ -34,7 +34,7 @@
 
 最终 pseudo-positive 生成使用 Round1 ABC protein-only candidate pool：
 
-`data/pseudo_labels/round1_abc_protein_only_corrected_20260607/candidates/candidate_manifest.csv`
+`artifacts/data/pseudo_labels/round1_abc_protein_only_corrected_20260607/candidates/candidate_manifest.csv`
 
 candidate policy 来自：
 
@@ -54,7 +54,7 @@ candidate policy 来自：
 
 最终 protein-only teacher score 被统一写入：
 
-`data/pseudo_labels/round1_abc_protein_only_corrected_20260607/combined/teacher_scores_ABC.csv`
+`artifacts/data/pseudo_labels/round1_abc_protein_only_corrected_20260607/combined/teacher_scores_ABC.csv`
 
 所有 final-present teacher 在 protein-only consensus 中按高分为阳性方向处理，阈值为 0.5。对于 0--1 范围内的 score，confidence 由代码计算为：
 
@@ -163,7 +163,7 @@ Round1 ABC combined summary 显示：
 
 最终 candidate index 为：
 
-`data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region_candidate_index.parquet`
+`artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region_candidate_index.parquet`
 
 该 candidate index 共 1,519 行，列名中没有 `teacher`、`pseudo`、`weak`、`profile`、`pstp`、`catgranule`、`psphunter`、`deephase` 或 `pspredictor` 字段。最终 label tier 分布为：
 
@@ -189,7 +189,7 @@ negative_tiers: N2_DISORDERED_NEGATIVE, N3_STRUCTURED_NEGATIVE
 | teacher | task/output | score normalization | ensemble weight | threshold/rule | missing-score handling | rationale | source code/config path |
 |---|---|---|---:|---|---|---|---|
 | DeePhase | protein-level LLPS score (`deephase_score`) | treated as 0--1 score; high direction | 1.0 | core teacher; positive if score >=0.5; contributes to `pseudo_positive_high` if >=2 core positives and mean core confidence >=0.70 | missing score contributes no core support; final index may show 0.0 placeholder | core teacher in protein-only Round1 ABC consensus | `external_artifacts/pseudo_label/teacher_protein_only_round1_abc.yaml`; `external_artifacts/scripts/pseudo_label/run_protein_only_teacher_batch.py::collect_scores`, `::consensus` |
-| PSPHunter_protein | protein-level LLPS probability (`psphunter_probability`) | treated as 0--1 score; high direction | 1.0 | core teacher; positive if score >=0.5; same core consensus rule | missing score contributes no core support | core teacher in protein-only Round1 ABC consensus | same as above; raw shards under `data/pseudo_labels/round1_abc_protein_only_corrected_20260607/batches/*/raw/psphunter/` |
+| PSPHunter_protein | protein-level LLPS probability (`psphunter_probability`) | treated as 0--1 score; high direction | 1.0 | core teacher; positive if score >=0.5; same core consensus rule | missing score contributes no core support | core teacher in protein-only Round1 ABC consensus | same as above; raw shards under `artifacts/data/pseudo_labels/round1_abc_protein_only_corrected_20260607/batches/*/raw/psphunter/` |
 | PSPredictor | protein-level score (`pspredictor_score`) | treated as 0--1 score; high direction | 1.0 | core teacher; positive if score >=0.5; same core consensus rule | 154 scores missing in pre-collect validation; missing rows do not support consensus | required core teacher; manually imported/web batch result | same YAML; `pre_collect_validation.json`; raw file `batches/*/raw/pspredictor/pspredictor_unique.csv` |
 | PSTP_protein | protein-level score (`pstp_score` / `protein_score`) | treated as 0--1 score; high direction; confidence scaled by 0.5 | 0.5 for auxiliary confidence only | audit auxiliary; cannot generate `pseudo_positive_high`; may only appear in review/audit logic | missing score contributes no pseudo-positive support | retained as auxiliary audit evidence; scan/profile output disabled | same YAML; `run_protein_only_teacher_batch.py::collect_scores`; raw files under `batches/*/raw/pstp/` |
 | catGRANULE2_protein | protein-level score (`catgranule2_score` / `protein_score`) | treated as 0--1 score; high direction; confidence scaled by 0.25 | 0.25 for auxiliary confidence only | audit auxiliary; `catGRANULE2` cannot trigger pseudo-positive alone | missing score contributes no pseudo-positive support | low-weight auxiliary audit evidence; region/profile output disabled | same YAML; `run_protein_only_teacher_batch.py::collect_scores`; raw `catgranule2_protein_scores.csv` |
@@ -200,14 +200,14 @@ negative_tiers: N2_DISORDERED_NEGATIVE, N3_STRUCTURED_NEGATIVE
 
 | tier | label value | sample weight | row count | evidence rule | used loss terms | rationale | source code/config path |
 |---|---|---|---:|---|---|---|---|
-| LLPS: pseudo_positive_high | 1 | final loss `sample_weight`: P1_driver 1.0 (1,534 rows), P2_client 1.2 (2,500), P3_C_D 0.95 (103); retained `llps_sample_weight`: 0.70 (2,295) or 0.85 (1,842) | 4,137 | mostly >=2 core positives and mean core confidence >=0.70; 16 rows have no core support and are promoted by positive region/bag evidence | weighted focal BCE; positive ranking pools P1/P2/P3; no teacher distillation because `teacher_llps=0.0` | high-confidence weak supervision; final model depends on pseudo-positive supervision but exact threshold choice is policy-based | final sample index; `run_protein_only_teacher_batch.py::consensus`; `build_multitask_round1_abc_dataset.py::assign_final_labels`; `phaseflow/data/offline_dataset.py`; `phaseflow/losses/multitask.py` |
-| LLPS: pseudo_positive_weak_preserved | 1 | final loss `sample_weight`: P1_driver 1.0 (1,107), P2_client 1.2 (692), P3_C_D 0.95 (381); retained `llps_sample_weight`: 0.30 (2,180) | 2,180 | original B-tier pseudo-positive retained when teacher consensus did not confirm high positive; teacher none is not converted into a negative | weighted focal BCE; positive ranking pools P1/P2/P3; no teacher distillation | preserves previous positive evidence with weak label status rather than treating teacher non-confirmation as negative evidence | `build_multitask_round1_abc_dataset.py`; `data/processed/merged/reports/03_audits_and_policies/abc_teacher_merge_audit.md` |
+| LLPS: pseudo_positive_high | 1 | final loss `sample_weight`: P1_driver 1.0 (1,534 rows), P2_client 1.2 (2,500), P3_C_D 0.95 (103); retained `llps_sample_weight`: 0.70 (2,295) or 0.85 (1,842) | 4,137 | mostly >=2 core positives and mean core confidence >=0.70; 16 rows have no core support and are promoted by positive region/bag evidence | weighted focal BCE; positive ranking pools P1/P2/P3; no teacher distillation because `teacher_llps=0.0` | high-confidence weak supervision; final model depends on pseudo-positive supervision but exact threshold choice is policy-based | final sample index; `run_protein_only_teacher_batch.py::consensus`; `build_multitask_round1_abc_dataset.py::assign_final_labels`; `phaseflow/full_length/data/offline_dataset.py`; `phaseflow/full_length/losses/multitask.py` |
+| LLPS: pseudo_positive_weak_preserved | 1 | final loss `sample_weight`: P1_driver 1.0 (1,107), P2_client 1.2 (692), P3_C_D 0.95 (381); retained `llps_sample_weight`: 0.30 (2,180) | 2,180 | original B-tier pseudo-positive retained when teacher consensus did not confirm high positive; teacher none is not converted into a negative | weighted focal BCE; positive ranking pools P1/P2/P3; no teacher distillation | preserves previous positive evidence with weak label status rather than treating teacher non-confirmation as negative evidence | `build_multitask_round1_abc_dataset.py`; `artifacts/data/processed/merged/reports/03_audits_and_policies/abc_teacher_merge_audit.md` |
 | LLPS: associated_context_unlabeled | -1 | final `sample_weight` 0.25; retained `llps_sample_weight` 0.0 | 6,051 | associated/context evidence but not supervised positive; teacher none/review not used as negative | not used by weighted focal BCE because label is -1; may be sampled as context/background pool | keeps ambiguous context from becoming hard negative | final sample index; `paper/full_length/audit/final_llps_config.yaml` |
 | LLPS: unknown_pu_unlabeled | -1 | final `sample_weight` 0.25; retained `llps_sample_weight` 0.0 | 45,509 | PU/background unknown; no hard negative assignment | not used by weighted focal BCE because label is -1 | PU/background sampling without negative supervision | final sample index; `abc_teacher_merge_audit.md` |
 | LLPS: gold_positive | 1 | final `sample_weight` 1.0; retained `llps_sample_weight` 1.0 | 323 | curated/gold positive | weighted focal BCE; positive ranking pool P1_driver | curated positive evidence | final sample index |
 | LLPS: negative_curated_structured | 0 | final `sample_weight`: N1_NP 1.0 (21,596) or N2_ND 1.4 (26,350); retained `llps_sample_weight` 1.0 | 47,946 | curated structured negative | weighted focal BCE; negative ranking pools N1/N2 | curated negative evidence | final sample index; `paper/full_length/audit/final_llps_config.yaml` |
 | LLPS: negative_curated_disordered | 0 | final `sample_weight` 1.4; retained `llps_sample_weight` 0.8 | 891 | curated disordered negative | weighted focal BCE; negative ranking pool N2_ND | curated negative evidence with disordered-negative role weighting | final sample index |
-| DPR: teacher pseudo regions | not used | not used | 0 | final DPR `weak_tiers: []`; candidate index contains only S1/S2/N2/N3 tiers | no teacher pseudo-region loss in final reported DPR training | final DPR uses curated/validated regions and curated negatives, not teacher pseudo regions | `paper/full_length/audit/final_dpr_config.yaml`; `data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region_candidate_index.parquet` |
+| DPR: teacher pseudo regions | not used | not used | 0 | final DPR `weak_tiers: []`; candidate index contains only S1/S2/N2/N3 tiers | no teacher pseudo-region loss in final reported DPR training | final DPR uses curated/validated regions and curated negatives, not teacher pseudo regions | `paper/full_length/audit/final_dpr_config.yaml`; `artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region_candidate_index.parquet` |
 
 ## 3. 证据路径
 
@@ -221,17 +221,17 @@ negative_tiers: N2_DISORDERED_NEGATIVE, N3_STRUCTURED_NEGATIVE
 ### Protein-only teacher generation and merge
 
 - `external_artifacts/pseudo_label/teacher_protein_only_round1_abc.yaml`
-- `data/pseudo_labels/round1_abc_protein_only_corrected_20260607/README.md`
-- `data/pseudo_labels/round1_abc_protein_only_corrected_20260607/source_reports/protein_only_dry_run_summary.md`
-- `data/pseudo_labels/round1_abc_protein_only_corrected_20260607/pre_collect_validation.json`
-- `data/pseudo_labels/round1_abc_protein_only_corrected_20260607/batches/AB/teacher_pseudo_label_report.json`
-- `data/pseudo_labels/round1_abc_protein_only_corrected_20260607/batches/C/teacher_pseudo_label_report.json`
-- `data/pseudo_labels/round1_abc_protein_only_corrected_20260607/combined/summary.json`
-- `data/pseudo_labels/round1_abc_protein_only_corrected_20260607/combined/teacher_scores_ABC.csv`
-- `data/pseudo_labels/round1_abc_protein_only_corrected_20260607/combined/teacher_protein_labels_ABC.csv`
-- `data/pseudo_labels/round1_abc_protein_only_corrected_20260607/combined/label_view_ABC.csv`
-- `data/processed/merged/reports/03_audits_and_policies/abc_teacher_merge_audit.md`
-- `data/processed/merged/reports/offline_features/19_teacher样本纳入规则与覆盖报告.md`
+- `artifacts/data/pseudo_labels/round1_abc_protein_only_corrected_20260607/README.md`
+- `artifacts/data/pseudo_labels/round1_abc_protein_only_corrected_20260607/source_reports/protein_only_dry_run_summary.md`
+- `artifacts/data/pseudo_labels/round1_abc_protein_only_corrected_20260607/pre_collect_validation.json`
+- `artifacts/data/pseudo_labels/round1_abc_protein_only_corrected_20260607/batches/AB/teacher_pseudo_label_report.json`
+- `artifacts/data/pseudo_labels/round1_abc_protein_only_corrected_20260607/batches/C/teacher_pseudo_label_report.json`
+- `artifacts/data/pseudo_labels/round1_abc_protein_only_corrected_20260607/combined/summary.json`
+- `artifacts/data/pseudo_labels/round1_abc_protein_only_corrected_20260607/combined/teacher_scores_ABC.csv`
+- `artifacts/data/pseudo_labels/round1_abc_protein_only_corrected_20260607/combined/teacher_protein_labels_ABC.csv`
+- `artifacts/data/pseudo_labels/round1_abc_protein_only_corrected_20260607/combined/label_view_ABC.csv`
+- `artifacts/data/processed/merged/reports/03_audits_and_policies/abc_teacher_merge_audit.md`
+- `artifacts/data/processed/merged/reports/offline_features/19_teacher样本纳入规则与覆盖报告.md`
 
 ### Key implementation functions
 
@@ -241,15 +241,15 @@ negative_tiers: N2_DISORDERED_NEGATIVE, N3_STRUCTURED_NEGATIVE
 - `external_artifacts/scripts/data/build_multitask_round1_abc_dataset.py::merge_teacher_outputs`
 - `external_artifacts/scripts/data/build_multitask_round1_abc_dataset.py::assign_final_labels`
 - `paper/full_length/audit/final_llps_config.yaml`
-- `phaseflow/data/offline_dataset.py::__getitem__`
-- `phaseflow/losses/multitask.py::compute_multitask_loss`
-- `phaseflow/losses/multitask.py::weighted_focal_bce_with_logits`
+- `phaseflow/full_length/data/offline_dataset.py::__getitem__`
+- `phaseflow/full_length/losses/multitask.py::compute_multitask_loss`
+- `phaseflow/full_length/losses/multitask.py::weighted_focal_bce_with_logits`
 
 ### Final DPR evidence
 
 - `paper/full_length/audit/final_dpr_config.yaml`
-- `data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region_candidate_index.parquet`
-- `data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region.yaml`
+- `artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region_candidate_index.parquet`
+- `artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_c_hq_region.yaml`
 
 ## 4. 无法从代码中确认或不应推测的信息
 

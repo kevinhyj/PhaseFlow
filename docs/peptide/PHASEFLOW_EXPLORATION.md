@@ -271,7 +271,7 @@ visual_training/bs2048_lr0.0008_flow32_20260128/
 
 ### 训练和推理
 
-- `experiments/peptide/train.py`: 训练脚本 (~500 LOC)
+- `research/peptide/experiments/train.py`: 训练脚本 (~500 LOC)
 - `experiments/example_usage.py`: 推理示例
 - `run_phase2seq.py`: Phase→Seq生成
 - `predict_random_peptides_phaseflow.py`: 随机肽预测
@@ -291,7 +291,7 @@ visual_training/bs2048_lr0.0008_flow32_20260128/
 
 ```bash
 cd /data4/huangyanjie/LLPS/predictor/PhaseFlow
-python experiments/peptide/train.py \
+python research/peptide/experiments/train.py \
     --config configs/peptide/set_encoder_bs2048_lr0.0008_flow32_20260128.yaml \
     --data_path /data4/huangyanjie/LLPS/phase_diagram/phase_diagram.csv \
     --output_dir outputs/my_run \
@@ -303,7 +303,7 @@ python experiments/peptide/train.py \
 
 ```bash
 # Seq → Phase
-python experiments/peptide/example_usage.py \
+python research/peptide/experiments/example_usage.py \
     --checkpoint outputs/output_set_encoder_bs2048_lr0.0008_flow32_20260128/best_model.pt \
     --mode seq2phase \
     --input "ACDEFGHIKLMN"
@@ -355,7 +355,7 @@ pip install -r requirements.txt
 |------|------|
 | `/data4/huangyanjie/LLPS/predictor/PhaseFlow` | PhaseFlow主目录 |
 | `phaseflow/model.py` | 主模型实现 |
-| `experiments/peptide/train.py` | 训练脚本 |
+| `research/peptide/experiments/train.py` | 训练脚本 |
 | `configs/peptide/set_encoder_bs2048_lr0.0008_flow32_20260128.yaml` | 最佳配置 |
 | `outputs/output_set_encoder_bs2048_lr0.0008_flow32_20260128/best_model.pt` | 最佳模型 |
 | `/data4/huangyanjie/LLPS/phase_diagram/phase_diagram.csv` | 训练数据 |

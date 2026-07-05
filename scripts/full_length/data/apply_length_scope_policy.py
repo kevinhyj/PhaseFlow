@@ -181,7 +181,7 @@ def manifest_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def write_scope_outputs(root: Path, pool: pd.DataFrame) -> dict[str, int]:
-    processed = root / "data/processed"
+    processed = root / "artifacts/data/processed"
     priority = {"gold": 5, "curated": 4, "silver": 3, "pseudo": 2, "unknown": 1}
     legal = pool[pool["seq_valid"].fillna(False).astype(bool)].copy()
     legal["_tier_priority"] = first_col(legal, "label_tier_candidate", default="unknown").map(priority).fillna(0)
@@ -248,7 +248,7 @@ def main() -> None:
     parser.add_argument("--root", default=".")
     args = parser.parse_args()
     root = Path(args.root).resolve()
-    processed = root / "data/processed"
+    processed = root / "artifacts/data/processed"
 
     pool = migrate_full_candidate_pool(processed / "full_candidate_pool.csv")
     migrate_manifest(

@@ -28,7 +28,7 @@ DEFAULT_INPUT_ROOTS = [
     ROOT / "artifacts/benchmarks/plan_d_external_val_fair_single_matrix_20260617",
 ]
 DEFAULT_OUT = ROOT / "artifacts/benchmarks/plan_d_fair_single_matrix_20260617_selection"
-DEFAULT_PLAN_D_VAL = ROOT / "data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_d_mixed_hq_val_candidate_index.parquet"
+DEFAULT_PLAN_D_VAL = ROOT / "artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_d_mixed_hq_val_candidate_index.parquet"
 
 FREE_METRICS = [
     "val_AUROC",

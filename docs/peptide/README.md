@@ -14,16 +14,15 @@ phase-to-sequence design.
 ```text
 phaseflow/             Core short-peptide package: model, tokenizer, data loading, utilities
 configs/peptide/       Versioned short-peptide experiment configurations
-experiments/peptide/   Training, evaluation, and generation entrypoints
+research/peptide/experiments/   Training, evaluation, and generation entrypoints
 scripts/peptide/       Shell launchers for common short-peptide workflows
-analyses/peptide/      Paper and supplemental analysis scripts
+research/peptide/analyses/      Paper and supplemental analysis scripts
 figures/peptide/       Curated figures used by README and reports
 docs/peptide/          Technical notes and extended documentation
-examples/peptide/      Small runnable examples and demo inputs
+examples/              Small runnable examples and demo inputs
 tests/peptide/         Lightweight smoke tests
-data/peptide/          Data documentation and optional small examples
-results/peptide/       Small curated result artifacts
-archive/peptide/       Historical outputs kept for traceability
+artifacts/data/peptide/          Data documentation and optional small examples
+artifacts/results/peptide/       Small curated result artifacts
 ```
 
 ## Installation
@@ -48,7 +47,7 @@ Training CSV files are expected to contain:
 - `AminoAcidSequence`
 - `group_11` through `group_44`, representing the 4x4 PSSI phase diagram
 
-Large datasets are intentionally not committed. See `data/peptide/README.md` for layout details.
+Large datasets are intentionally not committed. See `artifacts/data/peptide/README.md` for layout details.
 
 ## Training
 
@@ -71,7 +70,7 @@ bash scripts/peptide/train.sh --foreground --data /path/to/phase_diagram_origina
 You can also call the Python entrypoint directly:
 
 ```bash
-python experiments/peptide/train.py \
+python research/peptide/experiments/train.py \
   --config configs/peptide/default.yaml \
   --data_path /path/to/phase_diagram_original_scale.csv \
   --val_path /path/to/val_set.csv \
@@ -83,22 +82,22 @@ python experiments/peptide/train.py \
 Predict phase diagrams from a text file of sequences:
 
 ```bash
-bash scripts/peptide/infer.sh outputs/run_xxx/best_model.pt examples/peptide/sequences.txt results/peptide/predicted_phases.csv 0
+bash scripts/peptide/infer.sh outputs/run_xxx/best_model.pt examples/sequences.txt artifacts/results/peptide/predicted_phases.csv 0
 ```
 
 Or call the Python entrypoint:
 
 ```bash
-python experiments/peptide/predict_seq2phase.py \
+python research/peptide/experiments/predict_seq2phase.py \
   --checkpoint outputs/run_xxx/best_model.pt \
-  --input_file examples/peptide/sequences.txt \
-  --output results/peptide/predicted_phases.csv
+  --input_file examples/sequences.txt \
+  --output artifacts/results/peptide/predicted_phases.csv
 ```
 
 Generate sequences from target phase diagrams:
 
 ```bash
-python examples/peptide/phase2seq_demo.py \
+python examples/phase2seq_demo.py \
   --checkpoint outputs/run_xxx/best_model.pt \
   --input_csv /path/to/test_set.csv
 ```
@@ -106,17 +105,17 @@ python examples/peptide/phase2seq_demo.py \
 ## Evaluation
 
 ```bash
-python experiments/peptide/evaluate_seq2phase.py \
+python research/peptide/experiments/evaluate_seq2phase.py \
   --test_path /path/to/test_set.csv \
   --models_dir outputs_set
 
-python experiments/peptide/evaluate_phase2seq.py \
+python research/peptide/experiments/evaluate_phase2seq.py \
   --test_path /path/to/test_set.csv \
   --train_path /path/to/phase_diagram_original_scale.csv \
   --models_dir outputs_set
 ```
 
-Evaluation summaries are written to `results/peptide/evaluation/` unless overridden.
+Evaluation summaries are written to `artifacts/results/peptide/evaluation/` unless overridden.
 
 ## Model Overview
 
@@ -129,6 +128,6 @@ For detailed architecture notes, analysis summaries, and historical project note
 ## Development Checks
 
 ```bash
-python -m compileall phaseflow experiments analyses examples tests
+python -m compileall phaseflow research examples tests
 python -m unittest discover tests
 ```

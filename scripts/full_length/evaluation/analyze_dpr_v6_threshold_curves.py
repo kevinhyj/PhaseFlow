@@ -28,7 +28,7 @@ DEFAULT_DPR = (
     / "d1_flat_seed174_raw_planc_rankp257_p257_lr5e-6_50u_seed202606188_u0050_raw_phasepro/raw_p33_profiles.npz"
 )
 DEFAULT_PSTP = ROOT / "artifacts/benchmarks/plan_d_external_val_rankp257_single_20260617/profiles/pstp_nophasepro/p33_profiles.npz"
-DEFAULT_DATA = ROOT / "data/processed/evaluation/phasepro_official_v1"
+DEFAULT_DATA = ROOT / "artifacts/data/processed/evaluation/phasepro_official_v1"
 DEFAULT_OUT = ROOT / "artifacts/benchmarks/phasepro_threshold_tuning_p33"
 
 

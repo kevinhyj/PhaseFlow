@@ -7,7 +7,7 @@ git_commit: null
 dataset_release:
   contract_dataset_stage: stage1
   contract_dataset_version: llps_v1
-  contract_path: ./data/processed/merged/configs/offline_input_contract.yaml
+  contract_path: ./artifacts/data/processed/merged/configs/offline_input_contract.yaml
   sample_index: external_artifacts/final_llps/sample_index.parquet
   feature_store: stage1_llps_base_tiered_plan_corrected_20260611_094628
 audit_date: '2026-06-29'
@@ -83,7 +83,7 @@ data_and_inputs:
     mean: 0.0
   esm2_offline_cache: external_artifacts/final_llps/esm2_store_metadata_by_sequence.parquet
   esm2_cached_sequences: 109913
-  npz_mirror_manifest: ./data/processed/sharded_feature_store/stage1_llps_base_tiered_plan_corrected_20260611_094628/npz_mirror/npz_mirror_manifest.parquet
+  npz_mirror_manifest: ./artifacts/data/processed/sharded_feature_store/stage1_llps_base_tiered_plan_corrected_20260611_094628/npz_mirror/npz_mirror_manifest.parquet
   npz_mirror_kinds:
   - biophys
   - graph
@@ -158,26 +158,26 @@ model:
       - protenix_embed
       - starling_embed
       modality_embedding: true
-      source: ./phaseflow/models/adapters.py
+      source: ./phaseflow/full_length/models/adapters.py
     reliability_gate:
       type: ReliabilityGatedFusion
       gate: Linear(258,128) -> GELU -> Linear(128,1)
       normalization: softmax over available modalities after missing-modality masking
       uses_reliability_and_modality_mask: true
-      source: ./phaseflow/models/fusion.py
+      source: ./phaseflow/full_length/models/fusion.py
     local_motif_block:
       per_layer_branches: Conv1d kernels 3/5/9 plus dilated Conv1d kernel 7 at dilations
         2/4
       projection: 1x1 Conv1d to 512 -> GLU -> Dropout(0.10) -> 1x1 Conv1d to 256
       residual_norm: residual add followed by LayerNorm
-      source: ./phaseflow/models/local_motif_encoder.py
+      source: ./phaseflow/full_length/models/local_motif_encoder.py
     protein_readout:
       attention_pool: learned Linear(256,1) residue attention
       masked_mean_pool: true
       local_evidence_pool: DPR/reference-logit attention pool
       pooled_representation_dim: 768
       mlp: Linear(768,256) -> GELU -> Dropout(0.10) -> Linear(256,1)
-      source: ./phaseflow/models/heads.py
+      source: ./phaseflow/full_length/models/heads.py
     bio_residual_readout:
       bio_mlp: LayerNorm(33) -> [Linear/GELU/Dropout(0.15)/LayerNorm] over 33->256->256->128
       fusion_head: LayerNorm(896) -> Linear(896,256) -> GELU -> Dropout(0.15) -> Linear(256,1)
@@ -186,7 +186,7 @@ model:
       - driver_head
       - client_head
       - negtype_head
-      source: ./phaseflow/models/phaseflow.py
+      source: ./phaseflow/full_length/models/phaseflow.py
     local_region_evidence:
       head: MultiScaleDPRHead
       windows:
@@ -198,12 +198,12 @@ model:
       aggregation: topk_mean_plus_max
       topk_ratio: 0.04
       max_weight: 0.25
-      source: ./phaseflow/models/heads.py
+      source: ./phaseflow/full_length/models/heads.py
     final_mixture:
       protein_probability_weight: 0.8
       region_probability_weight: 0.19999999999999996
       trained: false
-      source: ./phaseflow/models/phaseflow.py
+      source: ./phaseflow/full_length/models/phaseflow.py
   freezing_by_module:
     modality_adapters: frozen
     reliability_gate: frozen

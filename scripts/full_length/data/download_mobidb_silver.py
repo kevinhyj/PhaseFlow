@@ -51,7 +51,7 @@ def fetch_batch(accs: list[str], timeout: int) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", default=".")
-    parser.add_argument("--raw-external-dir", default="data/raw_external")
+    parser.add_argument("--raw-external-dir", default="artifacts/data/raw_external")
     parser.add_argument("--target-highconf", type=int, default=3000)
     parser.add_argument("--max-accessions", type=int, default=8000)
     parser.add_argument("--batch-size", type=int, default=100)

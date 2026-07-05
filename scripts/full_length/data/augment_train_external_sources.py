@@ -217,10 +217,10 @@ def resolve_raw_external_dir(root: Path, raw_external_dir: str | None = None) ->
     if raw_external_dir:
         path = Path(raw_external_dir)
         return path if path.is_absolute() else root / path
-    dated = root / f"data/raw_external/{DATE}"
+    dated = root / f"artifacts/data/raw_external/{DATE}"
     if dated.exists():
         return dated
-    flat = root / "data/raw_external"
+    flat = root / "artifacts/data/raw_external"
     if flat.exists():
         return flat
     return dated
@@ -470,9 +470,9 @@ def load_benchmark_sets(root: Path) -> dict[str, set[str]]:
     source_ids: set[str] = set()
 
     for path in [
-        root / "data/benchmarks/protein_benchmark_ppmc/manifest.csv",
-        root / "data/benchmarks/protein_benchmark_ppmc/ppmc_ce_de_c_d_np_nd_raw.tsv",
-        root / "data/benchmarks/dpr_benchmark_phasepro/proteins.csv",
+        root / "artifacts/data/benchmarks/protein_benchmark_ppmc/manifest.csv",
+        root / "artifacts/data/benchmarks/protein_benchmark_ppmc/ppmc_ce_de_c_d_np_nd_raw.tsv",
+        root / "artifacts/data/benchmarks/dpr_benchmark_phasepro/proteins.csv",
     ]:
         df = pd.read_csv(path, sep="\t", dtype=str, keep_default_na=False) if path.suffix == ".tsv" and path.exists() else read_csv_maybe(path)
         if df.empty:
@@ -494,10 +494,10 @@ def load_benchmark_sets(root: Path) -> dict[str, set[str]]:
                 md5s.update(md5_sequence(clean_sequence(x)) for x in df[seq_col].dropna())
 
     for path in [
-        root / "data/benchmarks/protein_benchmark_ppmc/source_records.csv",
-        root / "data/benchmarks/protein_benchmark_ppmc/source_map.csv",
-        root / "data/benchmarks/dpr_benchmark_phasepro/source_records.csv",
-        root / "data/benchmarks/dpr_benchmark_phasepro/source_map.csv",
+        root / "artifacts/data/benchmarks/protein_benchmark_ppmc/source_records.csv",
+        root / "artifacts/data/benchmarks/protein_benchmark_ppmc/source_map.csv",
+        root / "artifacts/data/benchmarks/dpr_benchmark_phasepro/source_records.csv",
+        root / "artifacts/data/benchmarks/dpr_benchmark_phasepro/source_map.csv",
     ]:
         df = read_csv_maybe(path)
         if df.empty:
@@ -506,7 +506,7 @@ def load_benchmark_sets(root: Path) -> dict[str, set[str]]:
             if col in df:
                 source_ids.update(str(x) for x in df[col].dropna().astype(str) if x and x != "nan")
 
-    audit = read_csv_maybe(root / "data/processed/qc/leakage_cleanup_audit_20260606.csv")
+    audit = read_csv_maybe(root / "artifacts/data/processed/qc/leakage_cleanup_audit_20260606.csv")
     if not audit.empty:
         removed = audit[audit.get("action", "") == "remove"] if "action" in audit else audit
         for col in ["protein_id", "uniprot_id"]:
@@ -525,8 +525,8 @@ def load_benchmark_sets(root: Path) -> dict[str, set[str]]:
 
 
 def load_active_manifest(root: Path) -> pd.DataFrame:
-    active = read_csv_maybe(root / "data/pseudo_labels/round0_external/manifest_with_teacher.csv")
-    proteins = read_csv_maybe(root / "data/processed/proteins.csv")
+    active = read_csv_maybe(root / "artifacts/data/pseudo_labels/round0_external/manifest_with_teacher.csv")
+    proteins = read_csv_maybe(root / "artifacts/data/processed/proteins.csv")
     prot_cols = ["protein_id", "uniprot_id", "gene_name", "species", "tax_id", "sequence_md5"]
     if not active.empty and not proteins.empty:
         active = active.merge(proteins[[c for c in prot_cols if c in proteins.columns]], on="protein_id", how="left")
@@ -565,7 +565,7 @@ def load_phasepdb_candidates(root: Path, raw_dir: Path, swiss: dict[str, dict[st
         rows = payload.get("data", payload) if isinstance(payload, dict) else payload
         df = pd.DataFrame(rows)
     else:
-        path = root / "data/interim/parsed_source_tables/phasepdb3/phasepdb3_proteins.csv"
+        path = root / "artifacts/data/interim/parsed_source_tables/phasepdb3/phasepdb3_proteins.csv"
         df = read_csv_maybe(path)
     cands: list[Candidate] = []
     spans: list[dict[str, object]] = []
@@ -623,8 +623,8 @@ def load_phasepdb_candidates(root: Path, raw_dir: Path, swiss: dict[str, dict[st
 
 
 def load_llpsdb_candidates(root: Path) -> tuple[list[Candidate], list[dict[str, object]]]:
-    proteins = read_csv_maybe(root / "data/interim/parsed_source_tables/llpsdb_v2/llpsdb_v2_proteins.csv")
-    cond = read_csv_maybe(root / "data/interim/parsed_source_tables/llpsdb_v2/llpsdb_v2_conditions.csv")
+    proteins = read_csv_maybe(root / "artifacts/data/interim/parsed_source_tables/llpsdb_v2/llpsdb_v2_proteins.csv")
+    cond = read_csv_maybe(root / "artifacts/data/interim/parsed_source_tables/llpsdb_v2/llpsdb_v2_conditions.csv")
     cands: list[Candidate] = []
     spans: list[dict[str, object]] = []
     if proteins.empty or cond.empty:
@@ -1147,7 +1147,7 @@ def run_mmseqs_filter(
     benchmark: dict[str, set[str]],
     tag: str,
 ) -> tuple[set[str], set[str], Counter, dict[str, int | str]]:
-    work = root / f"data/interim/augmentation/mmseqs40_{DATE}_{tag}"
+    work = root / f"artifacts/data/interim/augmentation/mmseqs40_{DATE}_{tag}"
     if work.exists():
         shutil.rmtree(work)
     work.mkdir(parents=True, exist_ok=True)
@@ -1170,8 +1170,8 @@ def run_mmseqs_filter(
 
     with fasta.open("w", encoding="utf-8") as handle:
         for path in [
-            root / "data/benchmarks/protein_benchmark_ppmc/manifest.csv",
-            root / "data/benchmarks/dpr_benchmark_phasepro/proteins.csv",
+            root / "artifacts/data/benchmarks/protein_benchmark_ppmc/manifest.csv",
+            root / "artifacts/data/benchmarks/dpr_benchmark_phasepro/proteins.csv",
         ]:
             df = read_csv_maybe(path)
             if df.empty:
@@ -1341,8 +1341,8 @@ def final_overlap_checks(root: Path, final_df: pd.DataFrame, benchmark: dict[str
     stats = Counter()
     final_accs = set(final_df["uniprot_acc"].dropna().astype(str)) if "uniprot_acc" in final_df else set()
     final_md5s = set(final_df["sequence_md5"].dropna().astype(str)) if "sequence_md5" in final_df else set()
-    ppmc = read_csv_maybe(root / "data/benchmarks/protein_benchmark_ppmc/manifest.csv")
-    phasepro = read_csv_maybe(root / "data/benchmarks/dpr_benchmark_phasepro/proteins.csv")
+    ppmc = read_csv_maybe(root / "artifacts/data/benchmarks/protein_benchmark_ppmc/manifest.csv")
+    phasepro = read_csv_maybe(root / "artifacts/data/benchmarks/dpr_benchmark_phasepro/proteins.csv")
 
     def bench_overlap(df: pd.DataFrame, prefix: str) -> None:
         if df.empty:
@@ -1430,7 +1430,7 @@ def write_reports(
     max_pdb: int,
     max_pu: int,
 ) -> None:
-    reports = root / "data/reports"
+    reports = root / "artifacts/data/reports"
     reports.mkdir(parents=True, exist_ok=True)
     total = Counter()
     for c in counters.values():
@@ -1636,7 +1636,7 @@ def main() -> None:
         if pid in final_ids or pid in final_accs:
             clean_spans.append(row)
 
-    processed = root / "data/processed"
+    processed = root / "artifacts/data/processed"
     processed.mkdir(parents=True, exist_ok=True)
     canonical_df.to_csv(processed / "augmentation_canonical_source_table.csv", index=False)
     final_manifest.to_csv(processed / "augmented_train_manifest.csv", index=False)

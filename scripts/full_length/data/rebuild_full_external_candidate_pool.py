@@ -913,14 +913,14 @@ def write_fasta(path: Path, records: Iterable[tuple[str, str]]) -> None:
 
 
 def run_mmseqs_benchmark_search(root: Path, active_df: pd.DataFrame) -> tuple[set[str], Counter, dict[str, str]]:
-    work = root / f"data/interim/augmentation/mmseqs40_full_candidate_{DATE}"
+    work = root / f"artifacts/data/interim/augmentation/mmseqs40_full_candidate_{DATE}"
     if work.exists():
         shutil.rmtree(work)
     work.mkdir(parents=True, exist_ok=True)
     benchmark_rows = []
     for path in [
-        root / "data/benchmarks/protein_benchmark_ppmc/manifest.csv",
-        root / "data/benchmarks/dpr_benchmark_phasepro/proteins.csv",
+        root / "artifacts/data/benchmarks/protein_benchmark_ppmc/manifest.csv",
+        root / "artifacts/data/benchmarks/dpr_benchmark_phasepro/proteins.csv",
     ]:
         df = aug.read_csv_maybe(path)
         if df.empty:
@@ -1053,7 +1053,7 @@ def write_reports(
     spans: pd.DataFrame,
     mmseqs_paths: dict[str, str],
 ) -> None:
-    reports = root / "data/reports"
+    reports = root / "artifacts/data/reports"
     reports.mkdir(parents=True, exist_ok=True)
     funnel_lines = [
         f"# Full External Augmentation Funnel {DATE}",
@@ -1191,7 +1191,7 @@ def determine_completeness(raw_src: Path) -> dict[str, object]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", default=".")
-    parser.add_argument("--raw-src", default="data/raw_src")
+    parser.add_argument("--raw-src", default="artifacts/data/raw_src")
     parser.add_argument("--skip-mmseqs", action="store_true")
     parser.add_argument("--skip-context-counts", action="store_true")
     parser.add_argument("--use-mobidb-reviewed-tsv", action="store_true")
@@ -1203,9 +1203,9 @@ def main() -> None:
     args = parse_args()
     root = Path(args.root).resolve()
     raw_src = (root / args.raw_src).resolve() if not Path(args.raw_src).is_absolute() else Path(args.raw_src)
-    processed = root / "data/processed"
+    processed = root / "artifacts/data/processed"
     processed.mkdir(parents=True, exist_ok=True)
-    reports = root / "data/reports"
+    reports = root / "artifacts/data/reports"
     reports.mkdir(parents=True, exist_ok=True)
 
     completeness = determine_completeness(raw_src)

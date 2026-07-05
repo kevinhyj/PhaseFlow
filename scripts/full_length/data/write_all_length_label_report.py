@@ -56,7 +56,7 @@ def bool_series(df: pd.DataFrame, col: str, default: bool = False) -> pd.Series:
 
 
 def first_existing_m8(root: Path) -> tuple[Path | None, set[str]]:
-    candidates = sorted((root / "data/interim/model_ready").glob("mmseqs40_benchmark_*/benchmark_vs_model.m8"))
+    candidates = sorted((root / "artifacts/data/interim/model_ready").glob("mmseqs40_benchmark_*/benchmark_vs_model.m8"))
     if not candidates:
         return None, set()
     path = candidates[-1]
@@ -175,7 +175,7 @@ def write_report(
     patched_from_model_train: int,
     train_scope_rep_mismatch: int,
 ) -> Path:
-    reports = root / "data/reports"
+    reports = root / "artifacts/data/reports"
     reports.mkdir(parents=True, exist_ok=True)
     path = reports / f"all_length_label_tier_summary_{DATE}.md"
 
@@ -270,11 +270,11 @@ def main() -> None:
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
-    processed = root / "data/processed"
+    processed = root / "artifacts/data/processed"
 
     full_pool = read_csv(processed / "full_candidate_pool.csv")
     active = read_csv(processed / "active_train_manifest.csv")
-    old_clean = read_csv(root / "data/pseudo_labels/round0_external/manifest_with_teacher.csv")
+    old_clean = read_csv(root / "artifacts/data/pseudo_labels/round0_external/manifest_with_teacher.csv")
     old_aug = read_csv(processed / "augmented_train_manifest.csv")
     model_train = read_csv(processed / "model_train_manifest.csv")
     candidate = read_csv(processed / "candidate_manifest.csv")

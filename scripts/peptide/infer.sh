@@ -4,8 +4,8 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 CHECKPOINT="${1:-outputs/run_xxx/best_model.pt}"
-INPUT_FILE="${2:-examples/peptide/sequences.txt}"
-OUTPUT_FILE="${3:-results/peptide/predicted_phases.csv}"
+INPUT_FILE="${2:-examples/sequences.txt}"
+OUTPUT_FILE="${3:-artifacts/results/peptide/predicted_phases.csv}"
 GPU_ID="${4:-0}"
 
 export CUDA_VISIBLE_DEVICES="$GPU_ID"
@@ -31,7 +31,7 @@ echo "GPU ID:     $GPU_ID"
 echo "========================================"
 
 cd "$PROJECT_DIR"
-python experiments/peptide/predict_seq2phase.py \
+python research/peptide/experiments/predict_seq2phase.py \
     --checkpoint "$CHECKPOINT" \
     --input_file "$INPUT_FILE" \
     --output "$OUTPUT_FILE" \

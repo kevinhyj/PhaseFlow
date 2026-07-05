@@ -52,10 +52,27 @@ checkpoints/
 **/model_cache/
 **/mlruns/
 
-# Local/Hugging Face model downloads
-models/*
-!models/.gitignore
-!models/README.md
+# Local artifacts and Hugging Face downloads
+artifacts/data/**
+!artifacts/data/
+!artifacts/data/README.md
+!artifacts/data/peptide/
+!artifacts/data/peptide/README.md
+!artifacts/data/full_length/
+!artifacts/data/full_length/README.md
+artifacts/models/**
+!artifacts/models/
+!artifacts/models/.gitignore
+!artifacts/models/README.md
+
+# Retired root artifact locations
+data/
+models/
+results/
+archive/
+experiments/
+analyses/
+examples/peptide/
 
 # Backup
 backup/

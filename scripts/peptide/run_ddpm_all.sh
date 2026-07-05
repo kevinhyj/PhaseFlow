@@ -15,7 +15,7 @@ fi
 export PYTHONPATH="${PROJECT_DIR}:${PYTHONPATH}"
 export PYTORCH_CUDA_ALLOC_CONF="max_split_size_mb:512"
 
-DATA_PATH="${PHASEFLOW_DATA_PATH:-${PROJECT_DIR}/data/peptide/phase_diagram_original_scale.csv}"
+DATA_PATH="${PHASEFLOW_DATA_PATH:-${PROJECT_DIR}/artifacts/data/peptide/phase_diagram_original_scale.csv}"
 LOG_DIR="${PROJECT_DIR}/logs"
 mkdir -p "$LOG_DIR"
 
@@ -75,7 +75,7 @@ while [ $i -lt $TOTAL ]; do
 
         echo "  Launch: ${cfg_name} -> GPU ${gpu}"
 
-        CUDA_VISIBLE_DEVICES=$gpu python -u experiments/peptide/train.py \
+        CUDA_VISIBLE_DEVICES=$gpu python -u research/peptide/experiments/train.py \
             --config "configs/peptide/${cfg}" \
             --data_path "$DATA_PATH" \
             --output_dir outputs_ddpm \

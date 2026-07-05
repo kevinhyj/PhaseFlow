@@ -19,8 +19,8 @@ import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_DATA_ROOT = ROOT / "data/processed/stage2/dpr_v1"
-DEFAULT_BENCHMARK_ROOT = ROOT / "data/benchmarks/dpr_benchmark_phasepro"
+DEFAULT_DATA_ROOT = ROOT / "artifacts/data/processed/stage2/dpr_v1"
+DEFAULT_BENCHMARK_ROOT = ROOT / "artifacts/data/benchmarks/dpr_benchmark_phasepro"
 DEFAULT_OUTPUT_ROOT = ROOT / "artifacts/data/overall"
 
 SAMPLE_INDEXES = {
@@ -50,7 +50,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--mmseqs30-cluster",
         type=Path,
-        default=ROOT / "data/interim/server_final/mmseqs30_cluster.tsv",
+        default=ROOT / "artifacts/data/interim/server_final/mmseqs30_cluster.tsv",
     )
     parser.add_argument(
         "--old-homology-hits",
@@ -60,7 +60,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--region-span-jsonl",
         type=Path,
-        default=ROOT / "data/processed/model_region_spans.jsonl",
+        default=ROOT / "artifacts/data/processed/model_region_spans.jsonl",
     )
     return parser.parse_args()
 

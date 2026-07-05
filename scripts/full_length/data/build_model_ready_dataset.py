@@ -221,7 +221,7 @@ def load_benchmark_sets(root: Path) -> dict[str, set[str]]:
 
 
 def load_deleted_sets(root: Path) -> dict[str, set[str]]:
-    audit = read_csv(root / "data/processed/qc/leakage_cleanup_audit_20260606.csv")
+    audit = read_csv(root / "artifacts/data/processed/qc/leakage_cleanup_audit_20260606.csv")
     ids: set[str] = set()
     accs: set[str] = set()
     md5s: set[str] = set()
@@ -257,7 +257,7 @@ def load_deleted_sets(root: Path) -> dict[str, set[str]]:
 
 
 def load_phasepro_region_tuples(root: Path) -> set[tuple[str, int, int]]:
-    regions = read_csv(root / "data/benchmarks/dpr_benchmark_phasepro/regions.csv")
+    regions = read_csv(root / "artifacts/data/benchmarks/dpr_benchmark_phasepro/regions.csv")
     tuples: set[tuple[str, int, int]] = set()
     if regions.empty:
         return tuples
@@ -746,7 +746,7 @@ def run_mmseqs_benchmark_search(root: Path, canonical: pd.DataFrame, skip: bool 
     stats = Counter()
     paths: dict[str, str] = {}
     clean = canonical[canonical["final_leakage_status"].eq("clean")].copy()
-    work = root / f"data/interim/model_ready/mmseqs40_benchmark_{DATE}"
+    work = root / f"artifacts/data/interim/model_ready/mmseqs40_benchmark_{DATE}"
     if skip:
         stats["mmseqs_benchmark_skipped"] = 1
         return set(), stats, paths
@@ -755,8 +755,8 @@ def run_mmseqs_benchmark_search(root: Path, canonical: pd.DataFrame, skip: bool 
     work.mkdir(parents=True, exist_ok=True)
     benchmark_rows: list[tuple[str, str]] = []
     for path in [
-        root / "data/benchmarks/protein_benchmark_ppmc/manifest.csv",
-        root / "data/benchmarks/dpr_benchmark_phasepro/proteins.csv",
+        root / "artifacts/data/benchmarks/protein_benchmark_ppmc/manifest.csv",
+        root / "artifacts/data/benchmarks/dpr_benchmark_phasepro/proteins.csv",
     ]:
         df = read_csv(path)
         if df.empty:
@@ -822,7 +822,7 @@ def run_mmseqs_benchmark_search(root: Path, canonical: pd.DataFrame, skip: bool 
 def run_mmseqs_model_cluster(root: Path, clean: pd.DataFrame, skip: bool = False) -> tuple[dict[str, str], Counter, dict[str, str]]:
     stats = Counter()
     paths: dict[str, str] = {}
-    work = root / f"data/interim/model_ready/mmseqs40_model_clusters_{DATE}"
+    work = root / f"artifacts/data/interim/model_ready/mmseqs40_model_clusters_{DATE}"
     if skip:
         mapping = {str(row.protein_id): str(row.protein_id) for row in clean[["protein_id"]].itertuples(index=False)}
         stats["mmseqs_cluster_skipped_singletons"] = len(mapping)
@@ -874,7 +874,7 @@ def run_mmseqs_model_cluster(root: Path, clean: pd.DataFrame, skip: bool = False
 
 
 def preliminary_dpr_keys(root: Path, clean: pd.DataFrame, benchmark: dict[str, set[str]]) -> set[str]:
-    path = root / "data/processed/full_candidate_region_spans.jsonl"
+    path = root / "artifacts/data/processed/full_candidate_region_spans.jsonl"
     if not path.exists() or path.stat().st_size == 0:
         return set()
     spans = pd.read_json(path, lines=True)
@@ -998,7 +998,7 @@ def assign_valid_split(clean: pd.DataFrame, cluster_map: dict[str, str], valid_f
 
 def _legacy_clean_region_spans_unused(root: Path, split_df: pd.DataFrame, benchmark: dict[str, set[str]], phasepro_tuples: set[tuple[str, int, int]]) -> tuple[list[dict[str, Any]], Counter]:
     stats = Counter()
-    path = root / "data/processed/full_candidate_region_spans.jsonl"
+    path = root / "artifacts/data/processed/full_candidate_region_spans.jsonl"
     if not path.exists() or path.stat().st_size == 0:
         stats["input_span_file_missing"] = 1
         return [], stats
@@ -1371,7 +1371,7 @@ def _legacy_clean_region_spans_unused(root: Path, split_df: pd.DataFrame, benchm
 
 def clean_region_spans(root: Path, split_df: pd.DataFrame, benchmark: dict[str, set[str]], phasepro_tuples: set[tuple[str, int, int]]) -> tuple[list[dict[str, Any]], Counter]:
     stats = Counter()
-    path = root / "data/processed/full_candidate_region_spans.jsonl"
+    path = root / "artifacts/data/processed/full_candidate_region_spans.jsonl"
     if not path.exists() or path.stat().st_size == 0:
         stats["input_span_file_missing"] = 1
         return [], stats
@@ -1483,9 +1483,9 @@ def scan_teacher_targets(root: Path, benchmark: dict[str, set[str]], deleted: di
     bad_ids = set(benchmark["ids"]) | set(benchmark["accs"]) | set(deleted["ids"]) | set(deleted["accs"])
     bad_md5 = set(benchmark["md5s"]) | set(deleted["md5s"])
     csv_paths = [
-        root / "data/pseudo_labels/round0_external/teacher_scores.csv",
-        root / "data/pseudo_labels/round0_external/teacher_protein_labels.csv",
-        root / "data/pseudo_labels/round0_external/teacher_region_candidates.csv",
+        root / "artifacts/data/pseudo_labels/round0_external/teacher_scores.csv",
+        root / "artifacts/data/pseudo_labels/round0_external/teacher_protein_labels.csv",
+        root / "artifacts/data/pseudo_labels/round0_external/teacher_region_candidates.csv",
     ]
     for path in csv_paths:
         key = path.name
@@ -1507,7 +1507,7 @@ def scan_teacher_targets(root: Path, benchmark: dict[str, set[str]], deleted: di
             overlaps += int(mask.sum())
         stats[f"{key}:rows"] = rows
         stats[f"{key}:benchmark_deleted_overlap_rows"] = overlaps
-    jsonl_path = root / "data/pseudo_labels/round0_external/teacher_region_candidates.jsonl"
+    jsonl_path = root / "artifacts/data/pseudo_labels/round0_external/teacher_region_candidates.jsonl"
     if jsonl_path.exists():
         rows = 0
         overlaps = 0
@@ -1525,9 +1525,9 @@ def scan_teacher_targets(root: Path, benchmark: dict[str, set[str]], deleted: di
         stats["teacher_region_candidates.jsonl:rows"] = rows
         stats["teacher_region_candidates.jsonl:benchmark_deleted_overlap_rows"] = overlaps
     for path in [
-        root / "data/pseudo_labels/round0_external/teacher_scores.h5",
-        root / "data/processed/pstp_scan_region_targets.h5",
-        root / "data/processed/final_region_targets.h5",
+        root / "artifacts/data/pseudo_labels/round0_external/teacher_scores.h5",
+        root / "artifacts/data/processed/pstp_scan_region_targets.h5",
+        root / "artifacts/data/processed/final_region_targets.h5",
     ]:
         key = path.name
         if not path.exists():
@@ -1560,8 +1560,8 @@ def direct_overlap_checks(root: Path, df: pd.DataFrame, benchmark: dict[str, set
         if "sequence" in df.columns
         else 0
     )
-    ppmc = read_csv(root / "data/benchmarks/protein_benchmark_ppmc/manifest.csv")
-    phasepro = read_csv(root / "data/benchmarks/dpr_benchmark_phasepro/proteins.csv")
+    ppmc = read_csv(root / "artifacts/data/benchmarks/protein_benchmark_ppmc/manifest.csv")
+    phasepro = read_csv(root / "artifacts/data/benchmarks/dpr_benchmark_phasepro/proteins.csv")
     if not ppmc.empty:
         ppmc_acc = set()
         for col in ["protein_id", "uniprot_id"]:
@@ -1590,7 +1590,7 @@ def direct_overlap_checks(root: Path, df: pd.DataFrame, benchmark: dict[str, set
 
 def parse_source_funnel(root: Path, full_pool: pd.DataFrame, final_clean: pd.DataFrame) -> list[dict[str, Any]]:
     previous: dict[str, dict[str, Any]] = {}
-    path = root / f"data/reports/full_augmentation_funnel_{DATE}.md"
+    path = root / f"artifacts/data/reports/full_augmentation_funnel_{DATE}.md"
     if path.exists():
         in_table = False
         for line in path.read_text(encoding="utf-8").splitlines():
@@ -1734,7 +1734,7 @@ def _scope_skip_reasons(df: pd.DataFrame, context: str) -> list[str]:
 
 
 def write_scope_manifests(root: Path, canonical: pd.DataFrame, train: pd.DataFrame, valid: pd.DataFrame) -> dict[str, int]:
-    processed = root / "data/processed"
+    processed = root / "artifacts/data/processed"
     canonical = canonical.copy()
     canonical["source"] = canonical.get("source", canonical.get("sources", "")).fillna("").astype(str).str.split(";").str[0]
     canonical["skip_reason"] = _scope_skip_reasons(canonical, "candidate")
@@ -1796,7 +1796,7 @@ def write_sampler_config(root: Path) -> None:
             "negative_structured_to_disordered": "50:50 to 70:30",
         },
     }
-    path = root / "data/processed/model_sampler_config.json"
+    path = root / "artifacts/data/processed/model_sampler_config.json"
     path.write_text(json.dumps(config, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
 
 
@@ -1882,10 +1882,10 @@ def read_source_audit_pool(path: Path) -> pd.DataFrame:
 
 
 def write_source_label_audit(root: Path, canonical: pd.DataFrame) -> Path:
-    reports = root / "data/reports"
+    reports = root / "artifacts/data/reports"
     reports.mkdir(parents=True, exist_ok=True)
     path = reports / "source_label_audit.csv"
-    pool = read_source_audit_pool(root / "data/processed/full_candidate_pool.csv")
+    pool = read_source_audit_pool(root / "artifacts/data/processed/full_candidate_pool.csv")
     if pool.empty or canonical.empty:
         pd.DataFrame(columns=SOURCE_LABEL_AUDIT_COLUMNS).to_csv(path, index=False)
         return path
@@ -2014,7 +2014,7 @@ def write_reports(
     mmseqs_paths: dict[str, str],
     cluster_paths: dict[str, str],
 ) -> None:
-    reports = root / "data/reports"
+    reports = root / "artifacts/data/reports"
     reports.mkdir(parents=True, exist_ok=True)
     clean = canonical[canonical["final_leakage_status"].eq("clean")]
     write_source_label_audit(root, canonical)
@@ -2191,7 +2191,7 @@ def write_reports(
 
 
 def write_hard_positive_audit(root: Path, old_aug: pd.DataFrame, active: pd.DataFrame, canonical: pd.DataFrame) -> dict[str, Any]:
-    reports = root / "data/reports"
+    reports = root / "artifacts/data/reports"
     reports.mkdir(parents=True, exist_ok=True)
     old_norm = normalize_old_manifest(old_aug, "previous_augmented_train_20260606")
     old_norm = add_evidence_flags(old_norm)
@@ -2312,8 +2312,8 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     root = Path(args.root).resolve()
-    processed = root / "data/processed"
-    splits = root / "data/splits"
+    processed = root / "artifacts/data/processed"
+    splits = root / "artifacts/data/splits"
     processed.mkdir(parents=True, exist_ok=True)
     splits.mkdir(parents=True, exist_ok=True)
 
@@ -2321,7 +2321,7 @@ def main() -> None:
     full_pool = read_csv(processed / "full_candidate_pool.csv")
     active = read_csv(processed / "active_train_manifest.csv")
     old_aug = read_csv(processed / "augmented_train_manifest.csv")
-    old_clean = read_csv(root / "data/pseudo_labels/round0_external/manifest_with_teacher.csv")
+    old_clean = read_csv(root / "artifacts/data/pseudo_labels/round0_external/manifest_with_teacher.csv")
     if full_pool.empty or active.empty:
         raise SystemExit("full_candidate_pool.csv and active_train_manifest.csv are required.")
     benchmark = load_benchmark_sets(root)

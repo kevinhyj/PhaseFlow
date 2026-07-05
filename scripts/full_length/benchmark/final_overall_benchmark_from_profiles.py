@@ -34,8 +34,8 @@ from scripts.full_length.evaluation.dpr_v6_plan_d_common import build_residue_tr
 
 FINAL_ROOT = ROOT / "artifacts"
 OUT_ROOT = FINAL_ROOT / "benchmarks" / "final_overall_benchmark_20260617"
-PHASEPRO_ROOT = ROOT / "data" / "processed" / "evaluation" / "phasepro_official_v1"
-PLAN_D_VAL = ROOT / "data" / "processed" / "stage2" / "dpr_v8r1a" / "indices" / "sampler_plans" / "plan_d_mixed_hq_val_candidate_index.parquet"
+PHASEPRO_ROOT = ROOT / "artifacts" / "data" / "processed" / "evaluation" / "phasepro_official_v1"
+PLAN_D_VAL = ROOT / "artifacts" / "data" / "processed" / "stage2" / "dpr_v8r1a" / "indices" / "sampler_plans" / "plan_d_mixed_hq_val_candidate_index.parquet"
 PPMC_SCORE_TABLE = (
     ROOT
     / "external_artifacts"
@@ -1076,7 +1076,7 @@ def build_structure_audit(checkpoint: Path) -> dict[str, Any]:
         "final_phaseflow_llps_matches_reference_checkpoint": bool(llps_reference_match),
         "final_phaseflow_llps_parameter_tensors": int(len(final_llps_state)),
         "reference_phaseflow_llps_parameter_tensors": int(len(reference_state)),
-        "source_freeze_rule": "phaseflow/models/dpr_v6.py freezes the PhaseFlow LLPS backbone, PhaseFlow bridge, and bridge inputs; only v6./v6_feature_projectors are trainable.",
+        "source_freeze_rule": "phaseflow/full_length/models/dpr_v6.py freezes the PhaseFlow LLPS backbone, PhaseFlow bridge, and bridge inputs; only v6./v6_feature_projectors are trainable.",
     }
 
 

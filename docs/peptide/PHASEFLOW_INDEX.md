@@ -46,7 +46,7 @@
 │   ├── data.py                   # 数据处理 (389 LOC)
 │   ├── tokenizer.py              # 分词器 (191 LOC)
 │   └── utils.py                  # 工具函数 (434 LOC)
-├── experiments/peptide/train.py                # 训练脚本
+├── research/peptide/experiments/train.py                # 训练脚本
 ├── configs/                       # 8个配置文件
 ├── outputs/                      # 12个训练输出
 ├── experiments/                        # 推理脚本
@@ -238,7 +238,7 @@ total_loss = 32 * flow_loss + 1 * lm_loss
 
 ```bash
 cd /data4/huangyanjie/LLPS/predictor/PhaseFlow
-python experiments/peptide/train.py \
+python research/peptide/experiments/train.py \
     --config configs/peptide/set_encoder_bs2048_lr0.0008_flow32_20260128.yaml \
     --data_path /data4/huangyanjie/LLPS/phase_diagram/phase_diagram.csv \
     --output_dir outputs/my_run
@@ -247,7 +247,7 @@ python experiments/peptide/train.py \
 ### 推理 (Seq → Phase)
 
 ```bash
-python experiments/peptide/example_usage.py \
+python research/peptide/experiments/example_usage.py \
     --checkpoint outputs/output_set_encoder_bs2048_lr0.0008_flow32_20260128/best_model.pt \
     --mode seq2phase \
     --input "ACDEFGHIKLMN"
@@ -288,7 +288,7 @@ python score_windows.py \
 
 | 脚本 | 路径 |
 |------|------|
-| 训练 | `experiments/peptide/train.py` |
+| 训练 | `research/peptide/experiments/train.py` |
 | 推理示例 | `experiments/example_usage.py` |
 | Phase→Seq | `run_phase2seq.py` |
 | 随机肽预测 | `predict_random_peptides_phaseflow.py` |
