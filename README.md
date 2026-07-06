@@ -9,7 +9,7 @@
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Models](https://img.shields.io/badge/Models-Hugging%20Face%20pending-lightgrey)
 ![Datasets](https://img.shields.io/badge/Datasets-Hugging%20Face%20pending-lightgrey)
-![License](https://img.shields.io/badge/License-TBD-lightgrey)
+![License](https://img.shields.io/badge/License-Apache--2.0-blue)
 
 </div>
 
@@ -564,5 +564,5 @@ release are finalized.
 
 ## License
 
-License information is pending. Add the intended `LICENSE` file before public
-release or redistribution.
+This project is licensed under the Apache License, Version 2.0. See
+[`LICENSE`](LICENSE) for details.
