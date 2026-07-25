@@ -10,14 +10,14 @@
 - `data/build_dataset.py`: validate a release package and write a checksum
   manifest.
 - `data/build_region_targets.py`: create DPR region supervision from teacher
-  profiles.
+  profiles supplied explicitly from the released artifact collection.
 
 ## Figures
 
 The `figures/` directory contains portable figure generators for LLPS and DPR
 benchmarks, ablations, DPR profiles, and the model architecture. Every script
-uses explicit command-line input and output paths and produces PNG, PDF, and
-SVG files.
+uses explicit command-line input and output paths and produces PNG, PDF, SVG,
+and its corresponding plot-data CSV.
 
 ## Feature And Teacher Utilities
 

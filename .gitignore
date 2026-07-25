@@ -62,6 +62,9 @@ artifacts/data/**
 !artifacts/data/peptide/README.md
 !artifacts/data/full_length/
 !artifacts/data/full_length/README.md
+artifacts/derived/**
+!artifacts/derived/
+!artifacts/derived/README.md
 artifacts/models/**
 !artifacts/models/
 !artifacts/models/.gitignore

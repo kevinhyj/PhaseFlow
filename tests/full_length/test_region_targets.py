@@ -2,8 +2,14 @@ from argparse import Namespace
 
 import h5py
 import numpy as np
+import pytest
 
-from scripts.full_length.data.build_region_targets import build_targets_for_group
+from scripts.full_length.data.build_region_targets import build_targets_for_group, parse_args
+
+
+def test_region_target_builder_requires_explicit_teacher_scores() -> None:
+    with pytest.raises(SystemExit):
+        parse_args([])
 
 
 def _args(use_phaseflow: bool) -> Namespace:
@@ -31,7 +37,7 @@ def _args(use_phaseflow: bool) -> Namespace:
     )
 
 
-def test_final_region_targets_ignore_phaseflow_by_default(tmp_path) -> None:
+def test_region_targets_ignore_phaseflow_by_default(tmp_path) -> None:
     path = tmp_path / "teachers.h5"
     length = 8
     with h5py.File(path, "w") as handle:

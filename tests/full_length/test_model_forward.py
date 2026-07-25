@@ -68,7 +68,8 @@ def test_model_forward(tmp_path) -> None:
     model = PhaseFlowModel(_test_config())
     outputs = model(batch)
     assert outputs["llps_logits"].shape == (2,)
-    assert outputs["llps_logits"].shape == (2,)
+    assert outputs["raw_llps_logits"].shape == (2,)
+    assert outputs["loss_llps_logits"].shape == (2,)
     assert outputs["dpr_logits"].shape[:2] == batch["seq_mask"].shape
     assert outputs["region_global_logits"].shape == (2,)
     assert outputs["key_logits"].shape[:2] == batch["seq_mask"].shape

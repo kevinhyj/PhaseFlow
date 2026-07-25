@@ -5,7 +5,8 @@ publication figures. It never tracks model checkpoints, raw datasets,
 feature caches, profile archives, training logs, or regenerated benchmark
 outputs.
 
-Keep release data under `artifacts/data/full_length/` and model checkpoints
+Keep source data under `artifacts/data/full_length/`, regenerated feature and
+packing artifacts under `artifacts/derived/full_length/`, and model checkpoints
 under `artifacts/models/full_length/`. These directories are intentionally
 ignored except for their README files. The repository ignores `.pt`, `.pth`,
 `.ckpt`, `.safetensors`, `.bin`, `.onnx`, `.h5`, `.parquet`, `.npz`, and

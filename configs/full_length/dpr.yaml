@@ -2,13 +2,13 @@
 # Download data and pretrained checkpoints from Hugging Face into artifacts/.
 
 paths:
-  v2_data_root: artifacts/data/full_length/dpr/base
-  packed_root: artifacts/data/full_length/dpr/packed
-  tier_manifest: artifacts/data/full_length/dpr/training/protein_tiers.parquet
-  official_phasepro_root: artifacts/data/full_length/dpr/evaluation/phasepro
+  v2_data_root: artifacts/derived/full_length/dpr/base
+  packed_root: artifacts/derived/full_length/dpr/packed
+  tier_manifest: artifacts/derived/full_length/dpr/training/protein_tiers.parquet
+  official_phasepro_root: artifacts/derived/full_length/dpr/evaluation/phasepro
   output_root: runs/dpr
   phaseflow_llps_checkpoint: artifacts/models/full_length/llps/model.pt
-  phaseflow_checkpoint: artifacts/models/peptide/model.pt
+  phaseflow_checkpoint: artifacts/models/full_length/phaseflow/model.pt
 
 run:
   seed: 202606188

@@ -1,5 +1,6 @@
 # Full-length LLPS training configuration.
-# Download the data package from Hugging Face into artifacts/data/full_length.
+# Source data are published as a Hugging Face package; regenerated training
+# tensors are stored separately under artifacts/derived/full_length.
 seed: 20260612
 device: auto
 output_dir: runs/llps
@@ -10,9 +11,9 @@ feature_generation:
 
 data:
   dataset_class: PhaseFlowBatchPlanDataset
-  dataset_root: artifacts/data/full_length/llps/processed
-  input_contract: artifacts/data/full_length/llps/processed/configs/offline_input_contract.yaml
-  sample_index: artifacts/data/full_length/llps/training/sample_index.parquet
+  dataset_root: artifacts/derived/full_length/llps/processed
+  input_contract: artifacts/derived/full_length/llps/processed/configs/offline_input_contract.yaml
+  sample_index: artifacts/derived/full_length/llps/training/sample_index.parquet
   graph_source: merged_sparse
   allow_legacy_h5: false
   build_embeddings_at_runtime: false
@@ -23,12 +24,12 @@ data:
 
 dataset:
   type: PhaseFlowBatchPlanDataset
-  plan_dir: artifacts/data/full_length/llps/training/plan
-  sample_index: artifacts/data/full_length/llps/training/sample_index.parquet
-  dataset_root: artifacts/data/full_length/llps/processed
-  input_contract: artifacts/data/full_length/llps/processed/configs/offline_input_contract.yaml
-  esm2_store_metadata: artifacts/data/full_length/llps/training/esm2_store_metadata_by_sequence.parquet
-  npz_mirror_manifest: artifacts/data/full_length/llps/processed/features/npz_mirror_manifest.parquet
+  plan_dir: artifacts/derived/full_length/llps/training/plan
+  sample_index: artifacts/derived/full_length/llps/training/sample_index.parquet
+  dataset_root: artifacts/derived/full_length/llps/processed
+  input_contract: artifacts/derived/full_length/llps/processed/configs/offline_input_contract.yaml
+  esm2_store_metadata: artifacts/derived/full_length/llps/training/esm2_store_metadata_by_sequence.parquet
+  npz_mirror_manifest: artifacts/derived/full_length/llps/processed/features/npz_mirror_manifest.parquet
   region_supervision: none
   edge_attr_dim: 32
   hot_cache_pools: [P1_driver, P2_client, P3_C_D, N2_ND]

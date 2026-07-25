@@ -11,9 +11,9 @@ import numpy as np
 
 def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build stratified DPR region targets from teacher profiles.")
-    parser.add_argument("--teacher-scores", default="artifacts/data/pseudo_labels/round0_external/teacher_scores.h5")
-    parser.add_argument("--out", default="artifacts/data/full_length/dpr/region_targets.h5")
-    parser.add_argument("--report", default="artifacts/data/full_length/dpr/region_targets_report.json")
+    parser.add_argument("--teacher-scores", type=Path, required=True, help="Released teacher-profile HDF5 input.")
+    parser.add_argument("--out", type=Path, required=True, help="Output HDF5 region-target file outside the source dataset package.")
+    parser.add_argument("--report", type=Path, required=True, help="Output JSON summary outside the source dataset package.")
     parser.add_argument("--feature-dir", action="append", default=[])
     parser.add_argument(
         "--policy",
@@ -45,9 +45,9 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
 
 def main(argv: Iterable[str] | None = None) -> int:
     args = parse_args(argv)
-    teacher_path = Path(args.teacher_scores)
-    out_path = Path(args.out)
-    report_path = Path(args.report)
+    teacher_path = args.teacher_scores
+    out_path = args.out
+    report_path = args.report
     feature_dirs = [Path(path) for path in args.feature_dir]
     out_path.parent.mkdir(parents=True, exist_ok=True)
 

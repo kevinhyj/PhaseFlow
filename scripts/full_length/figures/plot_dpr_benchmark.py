@@ -19,7 +19,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--label-column")
-    parser.add_argument("--metric", action="append", default=["auprc", "auroc", "spearman"])
+    parser.add_argument("--metric", action="append", help="Metric column to include; repeat to override the default panel set.")
     parser.add_argument("--font", type=Path)
     return parser.parse_args()
 
@@ -28,13 +28,13 @@ def main() -> int:
     args = parse_args()
     frame = read_metrics(args.input)
     label = choose_column(frame, args.label_column, ("model", "method", "name", "arm_id"), "label")
-    metrics = list(dict.fromkeys(args.metric))
+    metrics = list(dict.fromkeys(args.metric or ["auprc", "auroc", "spearman"]))
     missing = [column for column in metrics if column not in frame]
     if missing:
         raise ValueError(f"metrics input is missing columns: {missing}")
     configure_style(args.font)
-    fig, axes = plt.subplots(1, len(metrics), figsize=(4.1 * len(metrics), max(3.4, 0.42 * len(frame))))
-    for axis, column in zip(axes, metrics):
+    fig, axes = plt.subplots(1, len(metrics), figsize=(4.1 * len(metrics), max(3.4, 0.42 * len(frame))), squeeze=False)
+    for axis, column in zip(axes[0], metrics):
         rows = frame.sort_values(column, ascending=True)
         axis.barh(rows[label].astype(str), rows[column], color="#50b9ae")
         axis.set_title(column.replace("_", " "))

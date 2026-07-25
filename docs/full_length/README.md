@@ -20,10 +20,11 @@ publication figures.
 ## Artifact Contract
 
 The source repository contains no model checkpoints, feature caches, profile
-archives, or training tables. Place released packages under
-`artifacts/data/full_length/` and checkpoints under
-`artifacts/models/full_length/`. The two full-length data packages use the
-same layout:
+archives, or training tables. Two kinds of Hugging Face artifact are needed:
+source data packages and regenerated training artifacts. Keep source packages
+under `artifacts/data/full_length/`, derived feature/packing artifacts under
+`artifacts/derived/full_length/`, and checkpoints under
+`artifacts/models/full_length/`. The data packages use this layout:
 
 ```text
 PhaseFlow-LLPS/

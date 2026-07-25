@@ -24,9 +24,9 @@ def test_v6_files_do_not_reference_v5_head_resume_or_region_global_logits() -> N
         assert token not in text
 
 
-def test_v6_uses_own_namespace_paths() -> None:
+def test_dpr_uses_separate_source_and_derived_artifact_paths() -> None:
     cfg = (ROOT / "configs/full_length/dpr.yaml").read_text(encoding="utf-8")
-    assert "artifacts/data/full_length/dpr" in cfg
+    assert "artifacts/derived/full_length/dpr" in cfg
     assert "artifacts/models/full_length/llps" in cfg
     assert "external_artifacts" not in cfg
     assert ("outputs" + "/") not in cfg

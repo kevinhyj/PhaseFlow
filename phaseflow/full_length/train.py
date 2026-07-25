@@ -868,9 +868,9 @@ def train(config: dict, resume: str | Path | None = None) -> Path:
                     "ema": _checkpoint_ema_state(ema if ema_save else None),
                     "ema_eval": ema_eval,
                 },
-                output_dir / "final.pt",
+                output_dir / "model.pt",
             )
-            shutil.copy2(output_dir / "final.pt", output_dir / "final.ckpt")
+            shutil.copy2(output_dir / "model.pt", output_dir / "model.ckpt")
             if ema is not None and ema_save:
                 torch.save(
                     {
