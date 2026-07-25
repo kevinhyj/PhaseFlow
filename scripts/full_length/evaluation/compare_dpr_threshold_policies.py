@@ -38,20 +38,18 @@ from scripts.full_length.evaluation.dpr_v6_plan_d_common import (  # noqa: E402
 
 DEFAULT_DPR_PHASEPRO = (
     ROOT
-    / "artifacts/benchmarks/phasepro_final_plan_d_fair_eval/profiles"
-    / "d1_flat_u0250_ema_pland_mixed_s2s_strong_lr3e-5_50u_u0050_raw/raw_p33_profiles.npz"
+    / "artifacts/data/full_length/dpr/evaluation/phasepro/dpr_profiles.npz"
 )
 DEFAULT_DPR_VAL = (
     ROOT
-    / "artifacts/benchmarks/plan_d_external_val/profiles"
-    / "d1_flat_u0250_ema_pland_mixed_s2s_strong_lr3e-5_50u_u0050_raw/p33_profiles.npz"
+    / "artifacts/data/full_length/dpr/evaluation/validation/dpr_profiles.npz"
 )
-DEFAULT_PSTP_PHASEPRO = ROOT / "external_artifacts/pstp_official_benchmark_v1/profiles/pstp_nophasepro/selected_family_p33_profiles.npz"
-DEFAULT_PSTP_VAL = ROOT / "artifacts/benchmarks/plan_d_external_val/profiles/pstp_nophasepro/p33_profiles.npz"
-DEFAULT_VALIDATION_SUMMARY = ROOT / "artifacts/benchmarks/plan_d_external_val/validation_selection_summary.json"
-DEFAULT_PHASEPRO_DATA = ROOT / "artifacts/data/processed/evaluation/phasepro_official_v1"
-DEFAULT_PLAN_D_VAL = ROOT / "artifacts/data/processed/stage2/dpr_v8r1a/indices/sampler_plans/plan_d_mixed_hq_val_candidate_index.parquet"
-DEFAULT_OUT = ROOT / "artifacts/benchmarks/phasepro_fair_threshold_policy_compare"
+DEFAULT_PSTP_PHASEPRO = ROOT / "artifacts/data/full_length/dpr/evaluation/phasepro/pstp_profiles.npz"
+DEFAULT_PSTP_VAL = ROOT / "artifacts/data/full_length/dpr/evaluation/validation/pstp_profiles.npz"
+DEFAULT_VALIDATION_SUMMARY = ROOT / "artifacts/data/full_length/dpr/evaluation/validation/selection_summary.json"
+DEFAULT_PHASEPRO_DATA = ROOT / "artifacts/data/full_length/dpr/evaluation/phasepro"
+DEFAULT_PLAN_D_VAL = ROOT / "artifacts/data/full_length/dpr/evaluation/validation/candidate_index.parquet"
+DEFAULT_OUT = ROOT / "runs/dpr_threshold_policy"
 
 
 @dataclass(frozen=True)

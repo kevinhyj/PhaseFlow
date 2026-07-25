@@ -141,7 +141,7 @@ You should consider PhaseFlow when your phase-separation workflow needs:
 The values below are summarized from the tracked configs, audit reports, and
 figure artifacts in this repository. They are included to make the README
 useful as a project entry point; detailed provenance remains in
-`configs/full_length/` and `docs/full_length/final/`.
+`configs/full_length/` and `docs/full_length/`.
 
 | Task | Evaluation setting | PhaseFlow result |
 | --- | --- | --- |
@@ -162,7 +162,7 @@ useful as a project entry point; detailed provenance remains in
 | Peptide core package | `phaseflow/` | Tokenizer, peptide Transformer, Flow Matching/DDPM model, utilities |
 | Full-length package | `phaseflow/full_length/` | Full-length data loading, feature builders, LLPS/DPR models, losses, metrics, inference helpers |
 | Peptide configs | `configs/peptide/` | Lightweight peptide training defaults |
-| Full-length configs | `configs/full_length/` | Final LLPS and DPR configuration summaries |
+| Full-length configs | `configs/full_length/` | LLPS and DPR training configurations |
 | Peptide scripts | `scripts/peptide/` | Training, inference, resume, and experiment launchers |
 | Full-length scripts | `scripts/full_length/` | Data construction, teacher wrappers, training, evaluation, and benchmark utilities |
 | Examples | `examples/` | Small peptide demo inputs and phase-to-sequence example |
@@ -272,7 +272,7 @@ stores, and model checkpoints that are not committed to Git.
 phaseflow/                 Short-peptide package and full_length subpackage
 phaseflow/full_length/     Full-length LLPS, DPR, feature, metric, and training code
 configs/peptide/           Short-peptide configs
-configs/full_length/       Final full-length LLPS and DPR configs
+configs/full_length/       Full-length LLPS and DPR configs
 docs/peptide/              Short-peptide documentation
 docs/full_length/          Full-length documentation and audit reports
 scripts/peptide/           Short-peptide training and inference launchers
@@ -377,10 +377,10 @@ The full-length code is packaged under `phaseflow.full_length`. It expects
 downloaded model checkpoints and feature/data bundles under `artifacts/models/full_length/`
 and `artifacts/data/full_length/`.
 
-Final released configuration summaries:
+Full-length training configurations:
 
-- `configs/full_length/final_llps.yaml`
-- `configs/full_length/final_dpr.yaml`
+- `configs/full_length/llps.yaml`
+- `configs/full_length/dpr.yaml`
 
 ### IDR sliding-window peptide PhaseFlow helper
 
@@ -395,21 +395,23 @@ python scripts/full_length/predict_idr_phaseflow.py \
 ### DPR training entry point
 
 ```bash
-torchrun --nproc_per_node=8 scripts/full_length/training/run_dpr_v6.py \
-  --config configs/full_length/final_dpr.yaml \
-  --arm d1_flat \
+torchrun --nproc_per_node=8 scripts/full_length/train_dpr.py \
+  --config configs/full_length/dpr.yaml \
+  --arm dpr \
   --updates 50 \
-  --output-root outputs/full_length/dpr_v6
+  --output-root runs/dpr
 ```
 
-This command requires the external full-length feature stores and checkpoints
-referenced by the config.
+This command requires the full-length data package, reconstructed feature
+stores, and checkpoints referenced by the config.
 
-### Manuscript table utilities
+### Full-length figures
 
 ```bash
-python scripts/full_length/generate_paper_tables.py
-python scripts/full_length/generate_tables_pdf.py --task all
+python scripts/full_length/figures/plot_llps_benchmark.py --help
+python scripts/full_length/figures/plot_dpr_benchmark.py --help
+python scripts/full_length/figures/plot_model_architecture.py \
+  --output-dir runs/figures/full_length
 ```
 
 ## Evaluation And Checks

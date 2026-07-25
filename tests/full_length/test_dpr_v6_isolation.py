@@ -11,8 +11,8 @@ def test_v6_files_do_not_reference_v5_head_resume_or_region_global_logits() -> N
         ROOT / "phaseflow/full_length/models/dpr_v6.py",
         ROOT / "phaseflow/full_length/data/dpr_v6.py",
         ROOT / "phaseflow/full_length/training/dpr_v6.py",
-        ROOT / "scripts/full_length/training/run_dpr_v6.py",
-        ROOT / "configs/full_length/final_dpr.yaml",
+        ROOT / "scripts/full_length/train_dpr.py",
+        ROOT / "configs/full_length/dpr.yaml",
     ]
     text = "\n".join(path.read_text(encoding="utf-8") for path in paths)
     forbidden = [
@@ -25,8 +25,8 @@ def test_v6_files_do_not_reference_v5_head_resume_or_region_global_logits() -> N
 
 
 def test_v6_uses_own_namespace_paths() -> None:
-    cfg = (ROOT / "configs/full_length/final_dpr.yaml").read_text(encoding="utf-8")
-    assert "artifacts/model/checkpoints/update_000050.pt" in cfg
-    assert "artifacts/data/processed/stage2/dpr_v8r1a" in cfg
-    assert "external_artifacts/overall/v6_v8r1a_region_finetune" in cfg
+    cfg = (ROOT / "configs/full_length/dpr.yaml").read_text(encoding="utf-8")
+    assert "artifacts/data/full_length/dpr" in cfg
+    assert "artifacts/models/full_length/llps" in cfg
+    assert "external_artifacts" not in cfg
     assert ("outputs" + "/") not in cfg

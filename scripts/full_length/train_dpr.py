@@ -18,7 +18,7 @@ import yaml
 from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -54,10 +54,10 @@ from scripts.full_length.ablation.dpr_stream_mask import load_stream_mask  # noq
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Train isolated DPR v6 ablation arms.")
-    parser.add_argument("--config", type=Path, required=True, help="Runtime DPR v6 training config.")
-    parser.add_argument("--arm", required=True)
-    parser.add_argument("--updates", type=int, default=2000)
+    parser = argparse.ArgumentParser(description="Train the full-length DPR model.")
+    parser.add_argument("--config", type=Path, required=True, help="DPR training configuration.")
+    parser.add_argument("--arm", default="dpr", help="Named training configuration in --config.")
+    parser.add_argument("--updates", type=int, default=None, help="Override scheduler.total_updates from --config.")
     parser.add_argument("--start-update", type=int, default=1)
     parser.add_argument("--end-update", type=int, default=None)
     parser.add_argument("--make-schedule-only", action="store_true")
@@ -88,6 +88,14 @@ def main() -> None:
         torch.cuda.set_device(device)
 
     cfg = resolve_config(args)
+    updates, end_update = resolve_updates(args, cfg)
+    configure_schedule_paths(
+        cfg,
+        arm=str(args.arm),
+        updates=updates,
+        schedule_seed=int(cfg["run"]["seed"]),
+        world_size=int(cfg["run"]["world_size"]),
+    )
     seed = int(args.seed if args.seed is not None else cfg["run"]["seed"])
     seed_all(seed + rank)
     output_root = Path(cfg["paths"]["output_root"]).resolve()
@@ -97,13 +105,14 @@ def main() -> None:
             directory.mkdir(parents=True, exist_ok=True)
         (dirs["configs"] / "resolved_config.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False), encoding="utf-8")
         write_json(dirs["logs"] / "environment.json", {"host": socket.gethostname(), "world": world, "arm": args.arm, "forbidden_env": forbidden_env()})
-        ensure_schedule(cfg, updates=int(args.updates))
+        ensure_schedule(cfg, updates=updates)
     barrier()
     if args.make_schedule_only:
         finish_dist()
         return
 
-    end_update = int(args.end_update if args.end_update is not None else args.updates)
+    if end_update > updates:
+        raise ValueError(f"end-update={end_update} exceeds updates={updates}")
     if int(world) != int(cfg["run"]["world_size"]):
         raise RuntimeError(f"DPR v6 requires world_size={cfg['run']['world_size']}, got {world}")
     schedule = pd.read_parquet(cfg["paths"]["schedule_current"])
@@ -133,7 +142,7 @@ def main() -> None:
     optimizer = make_optimizer(model, cfg, arm_cfg)
     scheduler = WarmupCosineScheduler(
         optimizer,
-        total_updates=int(args.updates),
+        total_updates=updates,
         warmup_updates=int(cfg["scheduler"]["warmup_updates"]),
         min_lr_ratio=float(cfg["scheduler"]["min_lr_ratio"]),
     )
@@ -305,6 +314,30 @@ def resolve_config(args: argparse.Namespace) -> dict[str, Any]:
     if mask is not None:
         cfg.setdefault("ablation", {})["stream_mask"] = mask
     return cfg
+
+
+def resolve_updates(args: argparse.Namespace, cfg: dict[str, Any]) -> tuple[int, int]:
+    configured_updates = int(cfg["scheduler"]["total_updates"])
+    updates = int(args.updates) if args.updates is not None else configured_updates
+    end_update = int(args.end_update) if args.end_update is not None else updates
+    if updates < 1 or end_update < int(args.start_update):
+        raise ValueError("updates must be positive and end-update must not precede start-update")
+    return updates, end_update
+
+
+def configure_schedule_paths(
+    cfg: dict[str, Any],
+    *,
+    arm: str,
+    updates: int,
+    schedule_seed: int,
+    world_size: int,
+) -> None:
+    output_root = Path(cfg["paths"]["output_root"])
+    schedule_dir = output_root / "schedules" / arm
+    stem = f"schedule_{int(updates):06d}_seed{int(schedule_seed)}_world{int(world_size)}"
+    cfg["paths"]["schedule_current"] = str(schedule_dir / f"{stem}.parquet")
+    cfg["paths"]["schedule_audit"] = str(schedule_dir / f"{stem}_audit.json")
 
 
 def ensure_schedule(cfg: dict[str, Any], *, updates: int) -> None:

@@ -123,7 +123,7 @@ def _predict(
     for batch in loader:
         batch = move_batch_to_device(batch, device)
         outputs = model(batch)
-        llps_output = outputs.get("final_llps_logits", outputs["llps_logits"])
+        llps_output = outputs.get("llps_logits", outputs["llps_logits"])
         llps_scores = torch.sigmoid(llps_output).detach().cpu().numpy()
         dpr_prob = torch.sigmoid(outputs["dpr_logits"]).detach().cpu().numpy()
         dpr_label = batch["y_dpr"].detach().cpu().numpy()

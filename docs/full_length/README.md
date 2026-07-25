@@ -1,49 +1,54 @@
-# PhaseFlow Full-Length
+# Full-Length PhaseFlow
 
-This directory documents the full-length protein portion of PhaseFlow: model
-code, data/feature utilities, training and inference entry points, final
-configuration summaries, and focused tests.
+This directory documents the full-length protein workflow: protein-level LLPS
+prediction, residue-level DPR prediction, data preparation, evaluation, and
+publication figures.
 
-The code is integrated into the unified repository as the
-`phaseflow.full_length` Python subpackage. Large model checkpoints, regenerated
-feature caches, raw benchmark artifacts, and manuscript build artifacts are
-intentionally not included in this GitHub tree.
+## Public Layout
 
-## Contents
+- `configs/full_length/llps.yaml`: LLPS training configuration.
+- `configs/full_length/dpr.yaml`: DPR training configuration.
+- `scripts/full_length/train_llps.py`: LLPS training entry point.
+- `scripts/full_length/train_dpr.py`: DPR training entry point.
+- `scripts/full_length/data/build_dataset.py`: validates a release dataset and
+  writes a checksum manifest.
+- `scripts/full_length/data/build_region_targets.py`: prepares DPR region
+  targets from teacher profiles.
+- `scripts/full_length/figures/`: benchmark, ablation, example-profile, and
+  architecture figure generators.
 
-- `phaseflow/full_length/`: Python package for model, data, feature, training, inference, and evaluation code.
-- `configs/full_length/`: final LLPS and DPR configuration summaries.
-- `scripts/full_length/`: maintained data, feature, training, evaluation, benchmark, report, and audit entry points.
-- `tests/full_length/`: focused unit tests for model, data, metrics, DPR variants, and inference paths.
-- `docs/full_length/`: lightweight architecture, reproduction, and artifact-policy notes.
+## Artifact Contract
 
-## Install
+The source repository contains no model checkpoints, feature caches, profile
+archives, or training tables. Place released packages under
+`artifacts/data/full_length/` and checkpoints under
+`artifacts/models/full_length/`. The two full-length data packages use the
+same layout:
 
-```bash
-python -m pip install -e ".[full_length,test]"
+```text
+PhaseFlow-LLPS/
+  data/proteins.parquet
+  data/training_units.parquet
+  benchmark/
+  configs/
+  metadata/
+PhaseFlow-DPR/
+  data/proteins.parquet
+  data/training_units.parquet
+  data/base_training_schedule.parquet
+  data/region_supervision.parquet
+  configs/
+  metadata/
 ```
 
-Optional feature-generation dependencies:
+Validate a package before feature reconstruction or training:
 
 ```bash
-python -m pip install -e ".[plm,starling]"
+python scripts/full_length/data/build_dataset.py \
+  --task llps \
+  --package-root artifacts/data/full_length/PhaseFlow-LLPS \
+  --output runs/data/llps_manifest.json
 ```
 
-## Basic Checks
-
-```bash
-python -m pytest tests/full_length/test_imports.py tests/full_length/test_phaseflow_fusion.py
-```
-
-## Artifact Policy
-
-This integrated repository keeps the full-length code and configuration files
-but excludes model files and heavyweight artifacts. In particular, do not commit
-checkpoint files such as `*.pt`, `*.pth`, or `*.ckpt`; keep them in external
-storage or a release channel outside the normal Git history.
-
-## Reproduction Notes
-
-- DPR reproduction report: `docs/full_length/final/dpr_v6_rankp257_repro_report_20260617.md`
-- Final DPR config: `configs/full_length/final_dpr.yaml`
-- Final LLPS config: `configs/full_length/final_llps.yaml`
+See `reproduction.md` for the command order and `artifact_policy.md` for files
+that must remain outside Git.

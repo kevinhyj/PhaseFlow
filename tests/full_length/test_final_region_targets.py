@@ -3,7 +3,7 @@ from argparse import Namespace
 import h5py
 import numpy as np
 
-from scripts.full_length.data.build_final_region_targets import build_targets_for_group
+from scripts.full_length.data.build_region_targets import build_targets_for_group
 
 
 def _args(use_phaseflow: bool) -> Namespace:

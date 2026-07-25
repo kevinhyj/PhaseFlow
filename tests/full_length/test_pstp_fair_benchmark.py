@@ -18,6 +18,11 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT_ROOT = ROOT / "external_artifacts/pstp_official_benchmark_v1"
 FEATURE_ROOT = OUT_ROOT / "reconstructed_features"
 
+pytestmark = pytest.mark.skipif(
+    not OUT_ROOT.exists(),
+    reason="requires the optional full-length benchmark artifacts",
+)
+
 
 def test_nophasepro_weights_manifested_and_separated() -> None:
     manifest = pd.read_csv(OUT_ROOT / "manifests/nophasepro_weights.csv")

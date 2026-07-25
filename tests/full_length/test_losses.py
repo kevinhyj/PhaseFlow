@@ -2,7 +2,7 @@ import torch
 
 from phaseflow.full_length.losses.dice import dice_loss_with_logits
 from phaseflow.full_length.losses.focal import focal_loss_with_logits
-from phaseflow.full_length.losses.final_region import (
+from phaseflow.full_length.losses.region_supervision import (
     boundary_transition_loss,
     residue_contrastive_margin_loss,
     weighted_soft_bce_logits,

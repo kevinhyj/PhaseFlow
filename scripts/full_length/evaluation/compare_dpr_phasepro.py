@@ -42,15 +42,15 @@ class ProfileBundle:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Final PhasePro comparison using Plan D validation-selected thresholds.")
+    parser = argparse.ArgumentParser(description="Compare DPR and PSTP profiles using validation-selected thresholds.")
     parser.add_argument("--validation-summary", type=Path, required=True)
     parser.add_argument("--dpr-profile", type=Path, required=True)
     parser.add_argument(
         "--pstp-profile",
         type=Path,
-        default=ROOT / "external_artifacts/pstp_official_benchmark_v1/profiles/pstp_nophasepro/selected_family_p33_profiles.npz",
+        default=ROOT / "artifacts/data/full_length/dpr/evaluation/phasepro/pstp_profiles.npz",
     )
-    parser.add_argument("--data-root", type=Path, default=ROOT / "artifacts/data/processed/evaluation/phasepro_official_v1")
+    parser.add_argument("--data-root", type=Path, default=ROOT / "artifacts/data/full_length/dpr/evaluation/phasepro")
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--best-n", type=int, default=12)
     parser.add_argument("--worst-n", type=int, default=12)
@@ -108,7 +108,7 @@ def main() -> int:
         "status": "PASS",
         "protocol": {
             "selection_split": "Plan D mixed HQ non-PhasePro validation",
-            "final_split": "official PhasePro",
+            "evaluation_split": "official PhasePro",
             "phasepro_used_for_threshold_or_checkpoint_selection": False,
             "dpr_threshold": dpr_threshold,
             "pstp_threshold": pstp_threshold,

@@ -57,7 +57,7 @@ def test_feature_region_supervision_with_dpr_losses_fails_fast() -> None:
 
 
 def test_pstp_region_supervision_requires_target_file_for_final_losses() -> None:
-    config = {"data": {}, "training": {"loss_weights": {"final_region_teacher": 1.0}}}
+    config = {"data": {}, "training": {"loss_weights": {"region_teacher": 1.0}}}
     with pytest.raises(ValueError, match="requires data.region_targets"):
         _validate_train_region_supervision(config, "region_targets")
 
@@ -65,7 +65,7 @@ def test_pstp_region_supervision_requires_target_file_for_final_losses() -> None
 def test_pstp_region_supervision_rejects_mixed_dpr_teacher_losses() -> None:
     config = {
         "data": {"region_targets": "artifacts/data/processed/pstp_scan_region_targets.h5"},
-        "training": {"loss_weights": {"final_region_teacher": 1.0, "teacher_dpr": 0.1, "region": 0.1}},
+        "training": {"loss_weights": {"region_teacher": 1.0, "teacher_dpr": 0.1, "region": 0.1}},
     }
     with pytest.raises(ValueError, match="Pure PSTP-Scan DPR training"):
         _validate_train_region_supervision(config, "region_targets")

@@ -5,11 +5,17 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA_ROOT = ROOT / "artifacts/data/processed/evaluation/phasepro_official_v1"
 OUT_ROOT = ROOT / "external_artifacts/pstp_official_benchmark_v1"
+
+pytestmark = pytest.mark.skipif(
+    not DATA_ROOT.exists() or not OUT_ROOT.exists(),
+    reason="requires the optional full-length benchmark artifacts",
+)
 
 
 def load_json(path: Path) -> dict:

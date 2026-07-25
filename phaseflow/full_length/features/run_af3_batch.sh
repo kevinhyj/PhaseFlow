@@ -9,8 +9,13 @@ DOCKER_IMAGE="alphafold3"
 MODE="no_msa"
 GPUS="all"
 
+usage() {
+  echo "Usage: $0 --json-dir af3/input_json --out-dir af3/output --model-dir artifacts/models/full_length/af3 [--mode no_msa|full_pipeline] [--db-dir artifacts/data/full_length/af3] [--docker-image alphafold3] [--gpus all|none|device=0]"
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    -h|--help) usage; exit 0 ;;
     --json-dir) JSON_DIR="$2"; shift 2 ;;
     --out-dir) OUT_DIR="$2"; shift 2 ;;
     --model-dir) MODEL_DIR="$2"; shift 2 ;;
@@ -18,12 +23,12 @@ while [[ $# -gt 0 ]]; do
     --mode) MODE="$2"; shift 2 ;;
     --docker-image) DOCKER_IMAGE="$2"; shift 2 ;;
     --gpus) GPUS="$2"; shift 2 ;;
-    *) echo "Unknown argument: $1" >&2; exit 2 ;;
+    *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
   esac
 done
 
 if [[ -z "$JSON_DIR" || -z "$OUT_DIR" || -z "$MODEL_DIR" ]]; then
-  echo "Usage: $0 --json-dir af3/input_json --out-dir af3/output --model-dir external_artifacts/af3/models [--mode no_msa|full_pipeline] [--db-dir external_artifacts/af3/databases] [--docker-image alphafold3] [--gpus all|none|device=0]" >&2
+  usage >&2
   exit 2
 fi
 if [[ "$MODE" != "no_msa" && "$MODE" != "full_pipeline" ]]; then

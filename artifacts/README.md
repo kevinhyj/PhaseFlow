@@ -1,12 +1,12 @@
 # Artifacts
 
-Local datasets, model downloads, and small curated result artifacts live here.
+Datasets, model downloads, and small curated result artifacts live here.
 
 Suggested layout:
 
 ```text
-artifacts/data/       Local datasets and generated feature stores
-artifacts/models/     Local model checkpoints downloaded from Hugging Face
+artifacts/data/       Dataset packages and generated feature stores
+artifacts/models/     Model checkpoints downloaded from Hugging Face
 artifacts/results/    Small curated outputs referenced by docs or figures
 ```
 

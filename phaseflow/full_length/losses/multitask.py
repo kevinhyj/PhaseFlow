@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from phaseflow.full_length.losses.consistency_loss import smoothness_loss
 from phaseflow.full_length.losses.dice import dice_loss_with_logits
 from phaseflow.full_length.losses.focal import focal_loss_with_logits
-from phaseflow.full_length.losses.final_region import (
+from phaseflow.full_length.losses.region_supervision import (
     boundary_transition_loss,
     residue_contrastive_margin_loss,
     weighted_soft_bce_logits,
@@ -158,40 +158,40 @@ def compute_multitask_loss(
         if phase_aux_weight > 0.0
         else zero_dpr_loss
     )
-    final_region_teacher = (
+    region_teacher = (
         weighted_soft_bce_logits(
             outputs["dpr_logits"],
             batch["region_teacher_target"],
             batch["region_teacher_weight"],
             batch["seq_mask"],
         )
-        if float(weights.get("final_region_teacher", 0.0)) > 0.0
+        if float(weights.get("region_teacher", 0.0)) > 0.0
         else zero_dpr_loss
     )
-    final_key_teacher = (
+    region_key_teacher = (
         weighted_soft_bce_logits(outputs["key_logits"], batch["region_key_target"], batch["region_key_weight"], batch["seq_mask"])
-        if float(weights.get("final_key_teacher", 0.0)) > 0.0
+        if float(weights.get("region_key_teacher", 0.0)) > 0.0
         else zero_dpr_loss
     )
-    final_boundary = (
+    region_boundary = (
         boundary_transition_loss(
             outputs["dpr_logits"],
             batch["region_boundary_target"],
             batch["region_boundary_weight"],
             batch["seq_mask"],
         )
-        if float(weights.get("final_boundary", 0.0)) > 0.0
+        if float(weights.get("region_boundary", 0.0)) > 0.0
         else zero_dpr_loss
     )
-    final_contrastive = (
+    region_contrastive = (
         residue_contrastive_margin_loss(
             outputs["dpr_logits"],
             batch["region_contrast_target"],
             batch["region_contrast_weight"],
             batch["seq_mask"],
-            margin=float(weights.get("final_region_contrastive_margin", 0.35)),
+            margin=float(weights.get("region_contrastive_margin", 0.35)),
         )
-        if float(weights.get("final_contrastive", 0.0)) > 0.0
+        if float(weights.get("region_contrastive", 0.0)) > 0.0
         else zero_dpr_loss
     )
     ranking_weight = float(weights.get("ranking_loss_weight", 0.0))
@@ -268,10 +268,10 @@ def compute_multitask_loss(
         + smooth_weight * smooth
         + negative_regularization_weight * negative_regularization
         + phase_aux_weight * phase_aux
-        + float(weights.get("final_region_teacher", 0.0)) * final_region_teacher
-        + float(weights.get("final_key_teacher", 0.0)) * final_key_teacher
-        + float(weights.get("final_boundary", 0.0)) * final_boundary
-        + float(weights.get("final_contrastive", 0.0)) * final_contrastive
+        + float(weights.get("region_teacher", 0.0)) * region_teacher
+        + float(weights.get("region_key_teacher", 0.0)) * region_key_teacher
+        + float(weights.get("region_boundary", 0.0)) * region_boundary
+        + float(weights.get("region_contrastive", 0.0)) * region_contrastive
         + ranking_weight * top_negative_ranking
         + hard_negative_focal_weight * hard_negative_focal
         + pairwise_rank_weight * pairwise_rank
@@ -303,10 +303,10 @@ def compute_multitask_loss(
         "smoothness": float(smooth.detach().cpu()),
         "negative_regularization": float(negative_regularization.detach().cpu()),
         "phase_aux": float(phase_aux.detach().cpu()),
-        "final_region_teacher": float(final_region_teacher.detach().cpu()),
-        "final_key_teacher": float(final_key_teacher.detach().cpu()),
-        "final_boundary": float(final_boundary.detach().cpu()),
-        "final_contrastive": float(final_contrastive.detach().cpu()),
+        "region_teacher": float(region_teacher.detach().cpu()),
+        "region_key_teacher": float(region_key_teacher.detach().cpu()),
+        "region_boundary": float(region_boundary.detach().cpu()),
+        "region_contrastive": float(region_contrastive.detach().cpu()),
         "top_negative_ranking": float(top_negative_ranking.detach().cpu()),
         "hard_negative_focal": float(hard_negative_focal.detach().cpu()),
         "weighted_focal_bce": float(weighted_focal_bce.detach().cpu()),

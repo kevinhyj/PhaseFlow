@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import torch
 from torch.utils.data import DataLoader
 
@@ -7,6 +9,9 @@ from phaseflow.full_length.features.build_features import build_feature_cache
 from phaseflow.full_length.features.bio_vec import BIO_VEC_NAMES
 from phaseflow.full_length.losses.multitask import compute_multitask_loss
 from phaseflow.full_length.models.phaseflow import PhaseFlowModel
+
+
+FIXTURE_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "full_length"
 
 
 def _test_config() -> dict:
@@ -53,9 +58,9 @@ def _decoupled_test_config() -> dict:
 
 def test_model_forward(tmp_path) -> None:
     build_feature_cache(
-        fasta="examples/toy_sequences.fasta",
-        protein_labels="examples/toy_labels.tsv",
-        regions="examples/toy_regions.jsonl",
+        fasta=FIXTURE_DIR / "toy_sequences.fasta",
+        protein_labels=FIXTURE_DIR / "toy_labels.tsv",
+        regions=FIXTURE_DIR / "toy_regions.jsonl",
         out_dir=tmp_path,
     )
     dataset = PhaseFlowDataset(tmp_path, ["toy_pos_1", "toy_neg_1"])
@@ -63,7 +68,7 @@ def test_model_forward(tmp_path) -> None:
     model = PhaseFlowModel(_test_config())
     outputs = model(batch)
     assert outputs["llps_logits"].shape == (2,)
-    assert outputs["final_llps_logits"].shape == (2,)
+    assert outputs["llps_logits"].shape == (2,)
     assert outputs["dpr_logits"].shape[:2] == batch["seq_mask"].shape
     assert outputs["region_global_logits"].shape == (2,)
     assert outputs["key_logits"].shape[:2] == batch["seq_mask"].shape
@@ -74,9 +79,9 @@ def test_model_forward(tmp_path) -> None:
 
 def test_decoupled_model_forward(tmp_path) -> None:
     build_feature_cache(
-        fasta="examples/toy_sequences.fasta",
-        protein_labels="examples/toy_labels.tsv",
-        regions="examples/toy_regions.jsonl",
+        fasta=FIXTURE_DIR / "toy_sequences.fasta",
+        protein_labels=FIXTURE_DIR / "toy_labels.tsv",
+        regions=FIXTURE_DIR / "toy_regions.jsonl",
         out_dir=tmp_path,
     )
     dataset = PhaseFlowDataset(tmp_path, ["toy_pos_1", "toy_neg_1"])
@@ -85,20 +90,20 @@ def test_decoupled_model_forward(tmp_path) -> None:
     outputs = model(batch)
     assert outputs["llps_logits"].shape == (2,)
     assert outputs["raw_llps_logits"].shape == (2,)
-    assert outputs["final_llps_logits"].shape == (2,)
+    assert outputs["llps_logits"].shape == (2,)
     assert outputs["loss_llps_logits"].shape == (2,)
     assert outputs["dpr_summary_features"].shape == (2, 6)
     assert outputs["llps_residue_repr"].shape == outputs["dpr_residue_repr"].shape
     assert outputs["dpr_logits"].shape[:2] == batch["seq_mask"].shape
-    assert not outputs["final_llps_logits"].isnan().any()
+    assert not outputs["llps_logits"].isnan().any()
     assert not outputs["dpr_summary_features"].isnan().any()
 
 
 def test_decoupled_llps_loss_does_not_update_dpr_branch(tmp_path) -> None:
     build_feature_cache(
-        fasta="examples/toy_sequences.fasta",
-        protein_labels="examples/toy_labels.tsv",
-        regions="examples/toy_regions.jsonl",
+        fasta=FIXTURE_DIR / "toy_sequences.fasta",
+        protein_labels=FIXTURE_DIR / "toy_labels.tsv",
+        regions=FIXTURE_DIR / "toy_regions.jsonl",
         out_dir=tmp_path,
     )
     dataset = PhaseFlowDataset(tmp_path, ["toy_pos_1", "toy_neg_1"])
@@ -124,10 +129,10 @@ def test_decoupled_llps_loss_does_not_update_dpr_branch(tmp_path) -> None:
             "key": 0.0,
             "smoothness": 0.0,
             "phase_aux": 0.0,
-            "final_region_teacher": 0.0,
-            "final_key_teacher": 0.0,
-            "final_boundary": 0.0,
-            "final_contrastive": 0.0,
+            "region_teacher": 0.0,
+            "region_key_teacher": 0.0,
+            "region_boundary": 0.0,
+            "region_contrastive": 0.0,
         },
     )
     loss.backward()
@@ -150,9 +155,9 @@ def test_decoupled_llps_loss_does_not_update_dpr_branch(tmp_path) -> None:
 
 def test_model_forward_with_phase_head(tmp_path) -> None:
     build_feature_cache(
-        fasta="examples/toy_sequences.fasta",
-        protein_labels="examples/toy_labels.tsv",
-        regions="examples/toy_regions.jsonl",
+        fasta=FIXTURE_DIR / "toy_sequences.fasta",
+        protein_labels=FIXTURE_DIR / "toy_labels.tsv",
+        regions=FIXTURE_DIR / "toy_regions.jsonl",
         out_dir=tmp_path,
     )
     dataset = PhaseFlowDataset(tmp_path, ["toy_pos_1", "toy_neg_1"])
@@ -167,9 +172,9 @@ def test_model_forward_with_phase_head(tmp_path) -> None:
 
 def test_no_protenix_starling_ablation_masks_modalities_and_edges(tmp_path) -> None:
     build_feature_cache(
-        fasta="examples/toy_sequences.fasta",
-        protein_labels="examples/toy_labels.tsv",
-        regions="examples/toy_regions.jsonl",
+        fasta=FIXTURE_DIR / "toy_sequences.fasta",
+        protein_labels=FIXTURE_DIR / "toy_labels.tsv",
+        regions=FIXTURE_DIR / "toy_regions.jsonl",
         out_dir=tmp_path,
     )
     dataset = PhaseFlowDataset(tmp_path, ["toy_pos_1", "toy_neg_1"])

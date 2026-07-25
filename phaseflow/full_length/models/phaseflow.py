@@ -239,7 +239,7 @@ class PhaseFlowModel(nn.Module):
             for parameter in self.llps_reference_dpr_head.parameters():
                 parameter.requires_grad = False
         self.key_head = ResidueHead(d_model, dropout)
-        self.final_llps_alpha = float(model_config.get("final_llps_alpha", 0.8))
+        self.llps_region_mix = float(model_config.get("llps_region_mix", 0.8))
         self.llps_logit_bias = float(model_config.get("llps_logit_bias", 0.0))
         self.llps_logit_temperature = max(float(model_config.get("llps_logit_temperature", 1.0)), 1.0e-6)
         summary_config = model_config.get("dpr_summary", {})
@@ -327,16 +327,16 @@ class PhaseFlowModel(nn.Module):
             seq_mask=seq_mask,
             dpr_logits=llps_reference_logits,
         )
-        final_llps_prob = (
-            self.final_llps_alpha * torch.sigmoid(llps_logits.float())
-            + (1.0 - self.final_llps_alpha) * torch.sigmoid(llps_reference["region_global_logits"].float())
+        llps_probability = (
+            self.llps_region_mix * torch.sigmoid(llps_logits.float())
+            + (1.0 - self.llps_region_mix) * torch.sigmoid(llps_reference["region_global_logits"].float())
         ).clamp(min=1.0e-6, max=1.0 - 1.0e-6)
         outputs = {
             "residue_repr": dpr_x,
             "llps_residue_repr": x,
             "dpr_residue_repr": dpr_x,
             "llps_logits": llps_logits,
-            "final_llps_logits": self._calibrated_llps_logits(torch.logit(final_llps_prob, eps=1.0e-6)),
+            "llps_logits": self._calibrated_llps_logits(torch.logit(llps_probability, eps=1.0e-6)),
             "dpr_logits": dpr_logits,
             "residue_dpr_logits": dpr_logits,
             "key_logits": self.key_head(dpr_x),
@@ -393,15 +393,15 @@ class PhaseFlowModel(nn.Module):
             dpr_logits=None,
         )
         if self.llps_only_forward:
-            final_llps_logits = self._calibrated_llps_logits(raw_llps_logits)
+            llps_logits = self._calibrated_llps_logits(raw_llps_logits)
             return {
                 "residue_repr": llps_x,
                 "shared_residue_repr": shared,
                 "llps_residue_repr": llps_x,
                 "llps_logits": raw_llps_logits,
                 "raw_llps_logits": raw_llps_logits,
-                "final_llps_logits": final_llps_logits,
-                "loss_llps_logits": final_llps_logits,
+                "llps_logits": llps_logits,
+                "loss_llps_logits": llps_logits,
                 "modality_weights": weights,
                 **aux_outputs,
             }
@@ -427,11 +427,11 @@ class PhaseFlowModel(nn.Module):
         dpr_logits = dpr["dpr_logits"]
         dpr_summary = self._dpr_summary_features(dpr, dpr_logits, seq_mask)
         if self.dpr_summary_head is not None:
-            summary_for_final = dpr_summary.detach() if self.dpr_summary_detach else dpr_summary
-            final_llps_logits = self.dpr_summary_head(raw_llps_logits, summary_for_final)
+            summary_for_llps = dpr_summary.detach() if self.dpr_summary_detach else dpr_summary
+            llps_logits = self.dpr_summary_head(raw_llps_logits, summary_for_llps)
         else:
-            final_llps_logits = raw_llps_logits
-        final_llps_logits = self._calibrated_llps_logits(final_llps_logits)
+            llps_logits = raw_llps_logits
+        llps_logits = self._calibrated_llps_logits(llps_logits)
         outputs = {
             "residue_repr": dpr_x,
             "shared_residue_repr": shared,
@@ -439,8 +439,8 @@ class PhaseFlowModel(nn.Module):
             "dpr_residue_repr": dpr_x,
             "llps_logits": raw_llps_logits,
             "raw_llps_logits": raw_llps_logits,
-            "final_llps_logits": final_llps_logits,
-            "loss_llps_logits": final_llps_logits,
+            "llps_logits": llps_logits,
+            "loss_llps_logits": llps_logits,
             "dpr_logits": dpr_logits,
             "residue_dpr_logits": dpr_logits,
             "key_logits": self.key_head(dpr_x),

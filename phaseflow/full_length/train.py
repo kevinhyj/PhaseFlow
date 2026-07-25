@@ -1232,7 +1232,7 @@ def _gpu_sample(local_rank: int) -> tuple[float, float]:
 
 
 def _batch_label_logit_stats(outputs: dict[str, torch.Tensor], batch: dict[str, Any]) -> dict[str, float]:
-    logits = outputs.get("loss_llps_logits", outputs.get("final_llps_logits", outputs["llps_logits"])).detach().reshape(-1)
+    logits = outputs.get("loss_llps_logits", outputs.get("llps_logits", outputs["llps_logits"])).detach().reshape(-1)
     labels = batch["y_llps"].detach().reshape(-1)
     pos = labels == 1.0
     neg = labels == 0.0
@@ -1394,10 +1394,10 @@ LOSS_COMPONENT_KEYS = [
     "smoothness",
     "negative_regularization",
     "phase_aux",
-    "final_region_teacher",
-    "final_key_teacher",
-    "final_boundary",
-    "final_contrastive",
+    "region_teacher",
+    "region_key_teacher",
+    "region_boundary",
+    "region_contrastive",
     "top_negative_ranking",
     "hard_negative_focal",
     "weighted_focal_bce",
@@ -1722,7 +1722,7 @@ def _nan_debug_row(
     for prefix, tensor, mask in [
         ("dpr_logit", outputs.get("dpr_logits"), seq_valid),
         ("region_logit", outputs.get("region_logits"), None),
-        ("llps_logit", outputs.get("loss_llps_logits", outputs.get("final_llps_logits", outputs.get("llps_logits"))), None),
+        ("llps_logit", outputs.get("loss_llps_logits", outputs.get("llps_logits", outputs.get("llps_logits"))), None),
         ("target", region_target, valid_region),
         ("input_plm", batch.get("plm"), seq_valid),
         ("input_physchem", batch.get("physchem"), seq_valid),
@@ -2642,11 +2642,11 @@ def _validate_train_region_supervision(config: dict[str, Any], train_region_supe
             "Use train_region_supervision='region_targets' with PSTP-Scan targets, "
             f"or train_region_supervision='none'. Active leakage-prone loss weights: {active_hard}"
         )
-    final_region_weights = ("final_region_teacher", "final_boundary", "final_contrastive", "final_key_teacher")
-    active_final = [name for name in final_region_weights if float(weights.get(name, 0.0)) > 0.0]
+    region_supervision_weights = ("region_teacher", "region_boundary", "region_contrastive", "region_key_teacher")
+    active_region_supervision = [name for name in region_supervision_weights if float(weights.get(name, 0.0)) > 0.0]
     data_config = config.get("data", {})
     has_region_target_source = bool(data_config.get("region_targets") or data_config.get("region_labels_dir"))
-    if train_region_supervision == "region_targets" and active_final and not has_region_target_source:
+    if train_region_supervision == "region_targets" and active_region_supervision and not has_region_target_source:
         raise ValueError("Region-target training requires data.region_targets or data.region_labels_dir.")
     allow_aux_region_targets = bool(config.get("training", {}).get("allow_region_target_aux_losses", False))
     pure_pstp_forbidden = (
@@ -2658,23 +2658,23 @@ def _validate_train_region_supervision(config: dict[str, Any], train_region_supe
         "self_dpr",
         "region",
         "coverage",
-        "final_key_teacher",
+        "region_key_teacher",
     )
     allow_npz_span_losses = bool(data_config.get("region_labels_dir")) and bool(
         config.get("training", {}).get("allow_region_label_npz_span_losses", False)
     )
     if not allow_aux_region_targets:
-        pure_pstp_forbidden = pure_pstp_forbidden + ("final_boundary", "final_contrastive")
+        pure_pstp_forbidden = pure_pstp_forbidden + ("region_boundary", "region_contrastive")
     if allow_npz_span_losses:
         pure_pstp_forbidden = tuple(
-            name for name in pure_pstp_forbidden if name not in {"region", "coverage", "final_boundary", "final_contrastive"}
+            name for name in pure_pstp_forbidden if name not in {"region", "coverage", "region_boundary", "region_contrastive"}
         )
     active_forbidden = [name for name in pure_pstp_forbidden if float(weights.get(name, 0.0)) > 0.0]
     if train_region_supervision == "region_targets" and active_forbidden:
         raise ValueError(
             "Pure PSTP-Scan DPR training must not mix feature-cache DPR teachers, "
             "hard DPR labels, or unapproved pseudo-region span losses. "
-            "Use only final_region_teacher, or set training.allow_region_target_aux_losses=true "
+            "Use only region_teacher, or set training.allow_region_target_aux_losses=true "
             "to enable boundary/contrastive losses from data.region_targets. "
             f"Active forbidden loss weights: {active_forbidden}"
         )
@@ -3187,10 +3187,10 @@ def _validate_strict_offline_config(config: dict) -> None:
                 "region": loss_weights.get("region", 0.0),
                 "coverage": loss_weights.get("coverage", 0.0),
                 "region_gold": loss_weights.get("region_gold", loss_weights.get("dpr", 0.0)),
-                "final_region_teacher": loss_weights.get("final_region_teacher", 0.0),
-                "final_key_teacher": loss_weights.get("final_key_teacher", 0.0),
-                "final_boundary": loss_weights.get("final_boundary", 0.0),
-                "final_contrastive": loss_weights.get("final_contrastive", 0.0),
+                "region_teacher": loss_weights.get("region_teacher", 0.0),
+                "region_key_teacher": loss_weights.get("region_key_teacher", 0.0),
+                "region_boundary": loss_weights.get("region_boundary", 0.0),
+                "region_contrastive": loss_weights.get("region_contrastive", 0.0),
                 "teacher_dpr": loss_weights.get("teacher_dpr", 0.0),
                 "teacher_distill": loss_weights.get("teacher_distill", 0.0),
                 "self_dpr": loss_weights.get("self_dpr", 0.0),

@@ -44,7 +44,7 @@ def evaluate_model(
         with torch.amp.autocast("cuda", enabled=device.type == "cuda"):
             outputs = model(batch)
         llps_labels.extend(batch["y_llps"].detach().cpu().numpy().tolist())
-        llps_output = outputs.get("final_llps_logits", outputs["llps_logits"])
+        llps_output = outputs.get("llps_logits", outputs["llps_logits"])
         llps_scores.extend(torch.sigmoid(llps_output).detach().cpu().numpy().tolist())
         negative_types.extend(batch.get("negative_type", [""] * len(batch["protein_ids"])))
         lengths = batch["lengths"].detach().cpu().numpy()

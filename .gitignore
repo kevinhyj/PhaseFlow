@@ -46,6 +46,8 @@ visual_training/
 *.pth
 *.ckpt
 *.safetensors
+*.bin
+*.onnx
 checkpoints/
 **/checkpoints/
 **/artifacts/model/
@@ -67,6 +69,8 @@ artifacts/models/**
 
 # Retired root artifact locations
 data/
+!scripts/full_length/data/
+!scripts/full_length/data/*.py
 models/
 results/
 archive/
@@ -100,6 +104,10 @@ sliding_window_scoring/*.log
 # Config
 configs/local*.yaml
 *.local.yaml
+
+# Keep only tiny, versioned test fixtures under source control.
+!tests/fixtures/
+!tests/fixtures/**/*.jsonl
 
 # Testing
 .pytest_cache/

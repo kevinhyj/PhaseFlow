@@ -707,7 +707,7 @@ class DPRV6PhaseStack(nn.Module):
             raise ValueError("DPR v6 LLPS preservation uses offline batches")
         with torch.no_grad():
             out = self.llps_backbone(batch)
-        logit = out.get("final_llps_logits", out.get("llps_logits"))
+        logit = out.get("llps_logits", out.get("llps_logits"))
         if logit is None:
             raise KeyError("PhaseFlow output does not include LLPS logits")
         return {"logit": logit, "probability": torch.sigmoid(logit.float()), **out}

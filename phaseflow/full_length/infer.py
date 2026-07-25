@@ -80,7 +80,7 @@ def run_inference(
         for batch in loader:
             batch = move_batch_to_device(batch, device)
             outputs = model(batch)
-            llps_output = outputs.get("final_llps_logits", outputs["llps_logits"])
+            llps_output = outputs.get("llps_logits", outputs["llps_logits"])
             llps = torch.sigmoid(llps_output).detach().cpu().numpy()
             dpr = torch.sigmoid(outputs["dpr_logits"]).detach().cpu().numpy()
             key = torch.sigmoid(outputs["key_logits"]).detach().cpu().numpy()

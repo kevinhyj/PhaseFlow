@@ -2,17 +2,22 @@
 set -euo pipefail
 
 CACHE_ROOT="protenix/cache"
-CHECKPOINT_SOURCE="external_artifacts/protenix/checkpoints/protenix_base.pt"
-CCD_SOURCE="external_artifacts/protenix/ccd_cache/components.cif"
-CCD_RDKIT_SOURCE="external_artifacts/protenix/ccd_cache/components.cif.rdkit_mol.pkl"
+CHECKPOINT_SOURCE="artifacts/models/full_length/protenix/protenix_base.pt"
+CCD_SOURCE="artifacts/data/full_length/protenix/components.cif"
+CCD_RDKIT_SOURCE="artifacts/data/full_length/protenix/components.cif.rdkit_mol.pkl"
+
+usage() {
+  echo "Usage: $0 [--cache-root PATH] [--checkpoint-source PATH] [--ccd-source PATH] [--ccd-rdkit-source PATH]"
+}
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    -h|--help) usage; exit 0 ;;
     --cache-root) CACHE_ROOT="$2"; shift 2 ;;
     --checkpoint-source) CHECKPOINT_SOURCE="$2"; shift 2 ;;
     --ccd-source) CCD_SOURCE="$2"; shift 2 ;;
     --ccd-rdkit-source) CCD_RDKIT_SOURCE="$2"; shift 2 ;;
-    *) echo "Unknown argument: $1" >&2; exit 2 ;;
+    *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
   esac
 done
 
