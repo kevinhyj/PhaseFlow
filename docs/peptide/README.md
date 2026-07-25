@@ -1,133 +1,101 @@
-# PhaseFlow
+# Short-Peptide Workflow
 
-PhaseFlow is a research codebase for bidirectional modeling between protein amino-acid
-sequences and 4x4 LLPS phase diagrams. The model combines a Transformer backbone with
-Flow Matching for sequence-to-phase prediction and conditional language modeling for
-phase-to-sequence design.
+The short-peptide PhaseFlow module learns a bidirectional relationship between
+an amino-acid sequence and a 4x4 phase-separation score index (PSSI) diagram.
+It supports sequence-to-phase prediction with Flow Matching or DDPM, and
+phase-conditioned peptide generation with a causal language-model objective.
 
-<p align="center">
-  <img src="figures/peptide/concept.svg" alt="PhaseFlow concept" width="85%"/>
-</p>
+This workflow is separate from the full-length LLPS and DPR pipeline. Its
+public implementation lives in `phaseflow/`, while training and evaluation
+entry points live in `research/peptide/experiments/`.
 
-## Repository Layout
+## Quick Start
 
-```text
-phaseflow/             Core short-peptide package: model, tokenizer, data loading, utilities
-configs/peptide/       Versioned short-peptide experiment configurations
-research/peptide/experiments/   Training, evaluation, and generation entrypoints
-scripts/peptide/       Shell launchers for common short-peptide workflows
-research/peptide/analyses/      Paper and supplemental analysis scripts
-figures/peptide/       Curated figures used by README and reports
-docs/peptide/          Technical notes and extended documentation
-examples/              Small runnable examples and demo inputs
-tests/peptide/         Lightweight smoke tests
-artifacts/data/peptide/          Data documentation and optional small examples
-artifacts/results/peptide/       Small curated result artifacts
-```
-
-## Installation
+Install the package and its runtime dependencies:
 
 ```bash
-conda env create -f environment.yml
-conda activate phaseflow
-pip install -e .
+python -m pip install -e .
 ```
 
-Alternatively:
-
-```bash
-pip install -r requirements.txt
-pip install -e .
-```
-
-## Data
-
-Training CSV files are expected to contain:
-
-- `AminoAcidSequence`
-- `group_11` through `group_44`, representing the 4x4 PSSI phase diagram
-
-Large datasets are intentionally not committed. See `artifacts/data/peptide/README.md` for layout details.
-
-## Training
+Place a peptide source table outside Git, for example at
+`artifacts/data/peptide/phase_diagram_original_scale.csv`, then launch training:
 
 ```bash
 bash scripts/peptide/train.sh \
   --config configs/peptide/default.yaml \
-  --data /path/to/phase_diagram_original_scale.csv \
-  --val /path/to/val_set.csv \
-  --test /path/to/test_set.csv \
-  --gpu 0
+  --data artifacts/data/peptide/phase_diagram_original_scale.csv \
+  --foreground
 ```
 
-The launcher writes logs to `logs/` and checkpoints to `outputs/` by default. To run in the
-foreground:
+The launcher creates a time-stamped log and delegates optimization to
+`research/peptide/experiments/train.py`. Pass `--help` to the launcher for all
+available overrides.
 
-```bash
-bash scripts/peptide/train.sh --foreground --data /path/to/phase_diagram_original_scale.csv
+## Data Contract
+
+The source CSV requires one sequence column and 16 PSSI columns:
+
+```text
+AminoAcidSequence,group_11,group_12,...,group_44
+ACDEFGHIKL,0.12,-0.08,...,0.31
 ```
 
-You can also call the Python entrypoint directly:
+`AminoAcidSequence` contains uppercase one-letter amino-acid sequences. The
+`group_11` through `group_44` columns represent a row-major 4x4 PSSI grid.
+Missing grid values may be encoded as `NaN`; the dataset loader derives a mask
+and excludes missing positions from the phase loss.
+
+When `phase_diagram.npz` is present beside the CSV, the loader can read the
+preprocessed phase array while continuing to use the CSV for sequences. The
+NPZ is an optional performance cache, not a source-of-truth replacement.
+
+## Training
+
+The canonical baseline is `configs/peptide/default.yaml`. It defines model,
+training, sampling, and split defaults. Explicit validation and test tables can
+be supplied with `--val` and `--test`; otherwise the Python trainer makes a
+deterministic train/validation/test split according to the configuration.
 
 ```bash
 python research/peptide/experiments/train.py \
   --config configs/peptide/default.yaml \
-  --data_path /path/to/phase_diagram_original_scale.csv \
-  --val_path /path/to/val_set.csv \
-  --test_path /path/to/test_set.csv
+  --data_path artifacts/data/peptide/phase_diagram_original_scale.csv \
+  --output_dir runs/peptide \
+  --device cuda
 ```
 
-## Inference
+Training outputs include the resolved configuration, checkpoints, metrics, and
+learning curves. Keep them outside Git.
 
-Predict phase diagrams from a text file of sequences:
+## Sequence-To-Phase Prediction
 
-```bash
-bash scripts/peptide/infer.sh outputs/run_xxx/best_model.pt examples/sequences.txt artifacts/results/peptide/predicted_phases.csv 0
-```
-
-Or call the Python entrypoint:
+Prepare a text file with one sequence per line, or a CSV containing the
+configured sequence column, then run:
 
 ```bash
 python research/peptide/experiments/predict_seq2phase.py \
-  --checkpoint outputs/run_xxx/best_model.pt \
+  --checkpoint artifacts/models/peptide/model.pt \
   --input_file examples/sequences.txt \
-  --output artifacts/results/peptide/predicted_phases.csv
+  --output runs/peptide/predicted_phases.csv \
+  --device cuda
 ```
 
-Generate sequences from target phase diagrams:
+For Flow Matching models, `--method` selects the ODE solver. The output CSV
+contains the input sequence and predicted values for all 16 PSSI positions.
 
-```bash
-python examples/phase2seq_demo.py \
-  --checkpoint outputs/run_xxx/best_model.pt \
-  --input_csv /path/to/test_set.csv
-```
+## Phase-To-Sequence Generation
 
-## Evaluation
+Use `examples/phase2seq_demo.py` for a minimal programmatic example. The model
+generates tokens autoregressively from a supplied phase vector and phase mask.
+Sampling controls such as temperature and maximum length should be recorded
+with every generated candidate set.
 
-```bash
-python research/peptide/experiments/evaluate_seq2phase.py \
-  --test_path /path/to/test_set.csv \
-  --models_dir outputs_set
+## Documentation Map
 
-python research/peptide/experiments/evaluate_phase2seq.py \
-  --test_path /path/to/test_set.csv \
-  --train_path /path/to/phase_diagram_original_scale.csv \
-  --models_dir outputs_set
-```
-
-Evaluation summaries are written to `artifacts/results/peptide/evaluation/` unless overridden.
-
-## Model Overview
-
-<p align="center">
-  <img src="figures/peptide/architecture.svg" alt="PhaseFlow architecture" width="90%"/>
-</p>
-
-For detailed architecture notes, analysis summaries, and historical project notes, see `docs/`.
-
-## Development Checks
-
-```bash
-python -m compileall phaseflow research examples tests
-python -m unittest discover tests
-```
+- [Architecture](ARCHITECTURE.md)
+- [Data loading and missing values](DATALOADER_OPTIMIZATION.md)
+- [Script reference](scripts.md)
+- [Technical overview](phaseflow_technical_overview.md)
+- [Evaluation and analysis protocol](ANALYSIS.md)
+- [Experimental record guidance](PHASEFLOW_EXPLORATION.md)
+- [Documentation index](PHASEFLOW_INDEX.md)

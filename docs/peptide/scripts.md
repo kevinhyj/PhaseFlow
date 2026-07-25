@@ -1,59 +1,64 @@
-# Script Reference
+# Peptide Script Reference
 
-Shell launchers live in `scripts/`. They are thin wrappers around Python entrypoints in
-`experiments/`.
+Shell launchers in `scripts/peptide/` are convenience wrappers around Python
+entry points in `research/peptide/experiments/`. They resolve repository-relative
+paths, set `PYTHONPATH`, and expose common options. Use the Python entry points
+directly when integrating PhaseFlow into another workflow.
 
 ## Training
 
 ```bash
 bash scripts/peptide/train.sh \
   --config configs/peptide/default.yaml \
-  --data /path/to/phase_diagram_original_scale.csv \
-  --val /path/to/val_set.csv \
-  --test /path/to/test_set.csv \
-  --gpu 0
+  --data artifacts/data/peptide/phase_diagram_original_scale.csv \
+  --val path/to/validation.csv \
+  --test path/to/test.csv \
+  --output-dir runs/peptide \
+  --foreground
 ```
 
-Useful options:
-
 | Option | Meaning |
-|---|---|
-| `--config` | YAML config path or filename under `configs/` |
-| `--data` | Training CSV |
-| `--val` | Optional validation CSV |
-| `--test` | Optional test CSV |
-| `--output-dir` | Output root for checkpoints |
-| `--threshold` | Missing-value threshold for `by_missing/missing_*.csv` datasets |
-| `--foreground` | Run in foreground instead of `nohup` background mode |
-
-If `--val` and `--test` are omitted, `research/peptide/experiments/train.py` creates train/val/test splits from
-`--data`.
+| --- | --- |
+| `--config` | YAML configuration path, or a file name under `configs/peptide/` |
+| `--data` | Required source CSV unless `PHASEFLOW_DATA_PATH` is set |
+| `--val`, `--test` | Optional explicit split files |
+| `--output-dir` | Directory for checkpoints and run outputs |
+| `--batch`, `--lr`, `--epochs` | Training overrides recorded by the trainer |
+| `--threshold` | Missing-value threshold mode; use only with `by_missing/` inputs |
+| `--foreground` | Stream logs in the current terminal instead of starting `nohup` |
 
 ## Resume Training
 
 ```bash
-bash scripts/resume.sh 0 outputs/run_xxx/best_model.pt
+bash scripts/peptide/resume.sh 0 runs/peptide/best_model.pt
 ```
 
-Environment overrides:
+The launcher reads `PHASEFLOW_CONFIG`, `PHASEFLOW_DATA_PATH`, and
+`PHASEFLOW_OUTPUT_DIR` when set. These variables are optional overrides, not
+repository defaults.
 
-| Variable | Meaning |
-|---|---|
-| `PHASEFLOW_CONFIG` | Config path |
-| `PHASEFLOW_DATA_PATH` | Training CSV path |
-| `PHASEFLOW_OUTPUT_DIR` | Output directory |
-
-## Seq2Phase Inference
+## Sequence-To-Phase Inference
 
 ```bash
-bash scripts/peptide/infer.sh outputs/run_xxx/best_model.pt examples/sequences.txt artifacts/results/peptide/predicted_phases.csv 0
+bash scripts/peptide/infer.sh \
+  artifacts/models/peptide/model.pt \
+  examples/sequences.txt \
+  runs/peptide/predicted_phases.csv \
+  0
 ```
 
-The underlying Python entrypoint is `research/peptide/experiments/predict_seq2phase.py`.
+The underlying entry point is
+`research/peptide/experiments/predict_seq2phase.py`. It accepts text or CSV
+sequence inputs and writes a CSV prediction table.
 
-## Batch Experiments
+## Experiment Launchers
 
-- `scripts/train_missing15_grid.sh`: launch a weight grid over missing-threshold 15 configs.
-- `scripts/train_scaling.sh`: launch model-size scaling configs.
-- `scripts/run_ddpm_all.sh`: launch DDPM ablation configs.
-- `scripts/peptide/kill_training.sh`: interactively terminate training processes.
+The remaining shell scripts launch predefined sweeps:
+
+- `train_missing15_grid.sh` for missing-value threshold studies.
+- `train_scaling.sh` for model-size studies.
+- `run_ddpm_all.sh` for DDPM configuration studies.
+- `kill_training.sh` for interactive termination of launchers started locally.
+
+Review every shell script before use. Sweep scripts are research conveniences;
+they do not replace a recorded experimental protocol.
