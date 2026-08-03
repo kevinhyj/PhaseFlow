@@ -9,6 +9,7 @@
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Models](https://img.shields.io/badge/Models-Hugging%20Face-blue)
 ![Datasets](https://img.shields.io/badge/Datasets-Hugging%20Face-blue)
+![Online Demo](https://img.shields.io/badge/Online%20Demo-phaseflow.bio-7C3AED)
 ![License](https://img.shields.io/badge/License-Apache--2.0-blue)
 
 </div>
@@ -20,6 +21,7 @@
 <p align="center">
   <a href="#quick-start"><img src="https://img.shields.io/badge/Get%20Started-Quick%20Start-0A66C2?style=for-the-badge" alt="Get Started: Quick Start"></a>
   <a href="#installation"><img src="https://img.shields.io/badge/Install-PhaseFlow-16A5A8?style=for-the-badge" alt="Install PhaseFlow"></a>
+  <a href="http://phaseflow.bio/"><img src="https://img.shields.io/badge/Try%20Online-PhaseFlow-7C3AED?style=for-the-badge" alt="Try PhaseFlow online"></a>
 </p>
 
 <br>
@@ -184,6 +186,7 @@ useful as a project entry point; detailed provenance remains in
 - [Why Use PhaseFlow?](#why-use-phaseflow)
 - [Key Results](#key-results)
 - [Key Modules](#key-modules)
+- [Public Resources](#public-resources)
 - [Quick Start](#quick-start)
 - [Installation](#installation)
 - [Repository Layout](#repository-layout)
@@ -203,6 +206,15 @@ useful as a project entry point; detailed provenance remains in
 
 <br>
 
+## Public Resources
+
+| Resource | Link | Purpose |
+| --- | --- | --- |
+| Source code | [GitHub: kevinhyj/PhaseFlow](https://github.com/kevinhyj/PhaseFlow) | Installation, workflows, configurations, and documentation |
+| Unified checkpoint | [Hugging Face: GENTEL-Lab/PhaseFlow](https://huggingface.co/GENTEL-Lab/PhaseFlow) | Combined peptide, full-protein, and DPR runtime weights |
+| Training data | [Hugging Face: GENTEL-Lab/OpenPhase](https://huggingface.co/datasets/GENTEL-Lab/OpenPhase) | Public peptide, LLPS, and DPR research-data packages |
+| Online demo | [phaseflow.bio](http://phaseflow.bio/) | Interactive PhaseFlow usage |
+
 ## Quick Start
 
 Install the source package:
@@ -219,11 +231,11 @@ python -c "import phaseflow; print(phaseflow.__version__)"
 Download the public training data and the combined runtime checkpoint:
 
 ```bash
-huggingface-cli download yanjiehuang/PhaseFlow_training_data \
+huggingface-cli download GENTEL-Lab/OpenPhase \
   --repo-type dataset \
   --local-dir artifacts/data/peptide
 
-hf download yanjiehuang/PhaseFlow PhaseFlow.pt \
+hf download GENTEL-Lab/PhaseFlow PhaseFlow.pt \
   --local-dir artifacts/models
 ```
 
@@ -238,8 +250,8 @@ bash scripts/peptide/infer.sh \
 ```
 
 The training data are hosted at
-[`yanjiehuang/PhaseFlow_training_data`](https://huggingface.co/datasets/yanjiehuang/PhaseFlow_training_data).
-The [combined PhaseFlow runtime checkpoint](https://huggingface.co/yanjiehuang/PhaseFlow)
+[`GENTEL-Lab/OpenPhase`](https://huggingface.co/datasets/GENTEL-Lab/OpenPhase).
+The [combined PhaseFlow runtime checkpoint](https://huggingface.co/GENTEL-Lab/PhaseFlow)
 contains peptide, full-protein, and DPR weights. It is intended for the
 combined runtime; the standalone peptide scripts below still expect a
 peptide-only `best_model.pt` checkpoint.
@@ -315,19 +327,19 @@ artifacts/models/
 Public peptide training-data download:
 
 ```bash
-huggingface-cli download yanjiehuang/PhaseFlow_training_data \
+huggingface-cli download GENTEL-Lab/OpenPhase \
   --repo-type dataset \
   --local-dir artifacts/data/peptide
 
-hf download yanjiehuang/PhaseFlow PhaseFlow.pt \
+hf download GENTEL-Lab/PhaseFlow PhaseFlow.pt \
   --local-dir artifacts/models
 ```
 
 | Resource | Local target | Status |
 | --- | --- | --- |
-| Peptide training data | `artifacts/data/peptide/` | [Available on Hugging Face](https://huggingface.co/datasets/yanjiehuang/PhaseFlow_training_data) |
+| OpenPhase training data | `artifacts/data/peptide/` | [Available on Hugging Face](https://huggingface.co/datasets/GENTEL-Lab/OpenPhase) |
 | Protein feature/data bundle | `artifacts/data/protein/` | Not yet released |
-| Combined peptide, full-protein, and DPR checkpoint | `artifacts/models/PhaseFlow.pt` | [Available on Hugging Face](https://huggingface.co/yanjiehuang/PhaseFlow) |
+| Combined peptide, full-protein, and DPR checkpoint | `artifacts/models/PhaseFlow.pt` | [Available on Hugging Face](https://huggingface.co/GENTEL-Lab/PhaseFlow) |
 | Standalone peptide-only checkpoint | `artifacts/models/peptide/` | Not yet released |
 
 ## Short-Peptide Usage
