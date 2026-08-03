@@ -6,12 +6,12 @@ __all__ = ["PhaseFlow", "AminoAcidTokenizer", "PhaseDataset"]
 
 def __getattr__(name):
     if name == "AminoAcidTokenizer":
-        from .tokenizer import AminoAcidTokenizer
+        from .peptide.tokenizer import AminoAcidTokenizer
         return AminoAcidTokenizer
     if name == "PhaseFlow":
-        from .model import PhaseFlow
+        from .peptide.model import PhaseFlow
         return PhaseFlow
     if name == "PhaseDataset":
-        from .data import PhaseDataset
+        from .peptide.data import PhaseDataset
         return PhaseDataset
     raise AttributeError(f"module 'phaseflow' has no attribute {name!r}")

@@ -1,0 +1,40 @@
+arm_id,label,plot_label,group,metric,value,ci_low,ci_high,n,positive_n,negative_n,bootstrap_n,bootstrap,score_column,panel_id
+no_starling_reference,PhaseFlow,PhaseFlow,reference,auprc,0.7521831456622791,0.7261594240737811,0.779578836849855,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_starling_reference,PhaseFlow,PhaseFlow,reference,auroc,0.8742824045886142,0.8598644975661236,0.8896711691036654,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_starling_reference,PhaseFlow,PhaseFlow,reference,mcc_at_0.5,0.5489069755309969,0.5173744911522707,0.580993145415693,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+all5_full_control,all embeddings (+STARLING),"all embeddings
+(+STARLING)",control,auprc,0.6281028508509878,0.5968725256837795,0.6601730413357596,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+all5_full_control,all embeddings (+STARLING),"all embeddings
+(+STARLING)",control,auroc,0.8156876520196958,0.7965071064816983,0.8326694658586009,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+all5_full_control,all embeddings (+STARLING),"all embeddings
+(+STARLING)",control,mcc_at_0.5,0.090600119549064,0.07200285207264864,0.10524119920438689,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_esm2_no_starling,w/o ESM2,w/o ESM2,learned,auprc,0.6234176928709675,0.5910636551618075,0.65723267306936,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_esm2_no_starling,w/o ESM2,w/o ESM2,learned,auroc,0.8203127975995328,0.8035095747039227,0.8366180515875618,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_esm2_no_starling,w/o ESM2,w/o ESM2,learned,mcc_at_0.5,0.4447865517655699,0.40971941168743625,0.48092500656863757,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_protenix_no_starling,w/o Protenix,w/o Protenix,learned,auprc,0.6792982241813217,0.646779098727055,0.7111501052034871,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_protenix_no_starling,w/o Protenix,w/o Protenix,learned,auroc,0.8637641247568466,0.8484601165887639,0.8775910869232618,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_protenix_no_starling,w/o Protenix,w/o Protenix,learned,mcc_at_0.5,0.5458564972071278,0.5122442024687679,0.5805762683981293,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_physchem_no_starling,w/o physchem,w/o physchem,biophys,auprc,0.748673071179912,0.7201888086557814,0.7772441456278152,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_physchem_no_starling,w/o physchem,w/o physchem,biophys,auroc,0.8712996181358911,0.8564092752700058,0.8862380296686244,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_physchem_no_starling,w/o physchem,w/o physchem,biophys,mcc_at_0.5,0.5444227161151606,0.5135784905753671,0.5770961084352058,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_disorder_no_starling,w/o disorder,w/o disorder,biophys,auprc,0.7525267986110763,0.7262369465825866,0.7810830202098132,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_disorder_no_starling,w/o disorder,w/o disorder,biophys,auroc,0.8738299752397188,0.8584879992256559,0.888651626278995,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_disorder_no_starling,w/o disorder,w/o disorder,biophys,mcc_at_0.5,0.550713885610677,0.5190302300154689,0.5827641967905082,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_pseudo_no_starling,w/o pseudo,w/o pseudo,pseudo,auprc,0.6206324272858909,0.5895034214653965,0.6529249277347497,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_pseudo_no_starling,w/o pseudo,w/o pseudo,pseudo,auroc,0.8033415451289689,0.7850292876969817,0.8223894139650484,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_pseudo_no_starling,w/o pseudo,w/o pseudo,pseudo,mcc_at_0.5,0.10122379216746484,0.08151385673726992,0.11886259716430815,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_physchem_disorder_no_starling,w/o physchem + disorder,"w/o physchem
++ disorder",biophys,auprc,0.7520177624083962,0.725423693104606,0.7804256365787695,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_physchem_disorder_no_starling,w/o physchem + disorder,"w/o physchem
++ disorder",biophys,auroc,0.8733060439440348,0.8580523057036072,0.8883985905686123,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+no_physchem_disorder_no_starling,w/o physchem + disorder,"w/o physchem
++ disorder",biophys,mcc_at_0.5,0.5478111884126903,0.5168877063559026,0.5792917034269,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+esm2_only_no_starling,ESM2 only,ESM2 only,learned,auprc,0.6929826879576838,0.662094075147063,0.7255317122932087,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+esm2_only_no_starling,ESM2 only,ESM2 only,learned,auroc,0.8671206571934393,0.8525697612334553,0.881263992056727,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+esm2_only_no_starling,ESM2 only,ESM2 only,learned,mcc_at_0.5,0.5538572020718251,0.5213547600428577,0.5868120092859228,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+biophys_only_no_starling,physchem + disorder only,"physchem +
+disorder only",biophys,auprc,0.5264578426124419,0.49592285384275336,0.5591232925173935,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+biophys_only_no_starling,physchem + disorder only,"physchem +
+disorder only",biophys,auroc,0.7926181265240998,0.7741624280687294,0.8096789593812741,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd
+biophys_only_no_starling,physchem + disorder only,"physchem +
+disorder only",biophys,mcc_at_0.5,0.38842267191466073,0.347620821243846,0.4240955712318281,2876,755,2121,2000,stratified_by_label,llps_score,ppmc_any_llps_vs_np_nd

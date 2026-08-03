@@ -41,7 +41,7 @@ echo "All $TOTAL jobs launched, monitoring..."
 echo ""
 
 while true; do
-    running=$(ps aux | grep "research/peptide/experiments/train.py" | grep -v grep | wc -l)
+    running=$(ps aux | grep "scripts/peptide/workflows/train.py" | grep -v grep | wc -l)
     if [ $running -eq 0 ]; then
         break
     fi

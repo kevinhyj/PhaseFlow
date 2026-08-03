@@ -1,0 +1,11 @@
+short_label,arm_id,auroc,auprc,accuracy_at_0.5,precision_at_0.5,recall_at_0.5,f1_at_0.5,mcc_at_0.5
+No IDR,no_disorder_no_starling,0.8738,0.7525,0.8042,0.5970,0.7828,0.6774,0.5507
+No STAR,no_starling_reference,0.8743,0.7522,0.8022,0.5928,0.7868,0.6762,0.5489
+No Biophys,no_physchem_disorder_no_starling,0.8733,0.7520,0.8018,0.5924,0.7854,0.6754,0.5478
+No Phys,no_physchem_no_starling,0.8713,0.7487,0.7994,0.5881,0.7868,0.6731,0.5444
+ESM2 only,esm2_only_no_starling,0.8671,0.6930,0.8133,0.6190,0.7510,0.6786,0.5539
+No Prot,no_protenix_no_starling,0.8638,0.6793,0.8185,0.6412,0.7007,0.6696,0.5459
+All5,all5_full_control,0.8157,0.6281,0.2886,0.2692,0.9974,0.4240,0.0906
+No ESM2,no_esm2_no_starling,0.8203,0.6234,0.7691,0.5499,0.6636,0.6014,0.4448
+Biophys only,biophys_only_no_starling,0.7926,0.5265,0.7771,0.5947,0.4742,0.5276,0.3884
+No pseudo,no_pseudo_no_starling,0.8033,0.6206,0.2973,0.2713,0.9947,0.4263,0.1012

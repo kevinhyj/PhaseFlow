@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "phaseflow"
 version = "0.1.0"
-description = "PhaseFlow models for peptide and full-length protein LLPS prediction."
+description = "PhaseFlow models for peptide and protein LLPS prediction."
 readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.10"
@@ -24,7 +24,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-full_length = [
+protein = [
   "torch>=2.1",
   "numpy>=1.24",
   "pandas>=2.0",

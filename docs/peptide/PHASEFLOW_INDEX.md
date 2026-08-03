@@ -21,10 +21,10 @@ phaseflow/
   utils.py                     Configuration, checkpoints, metrics, and utilities
 
 configs/peptide/              Canonical peptide configurations
-research/peptide/experiments/ Training, prediction, generation, and evaluation tools
+scripts/peptide/workflows/    Training, prediction, generation, and evaluation tools
 scripts/peptide/              Convenience launchers
 tests/peptide/                Smoke tests
 ```
 
 Use the repository root README for cross-workflow installation and artifact
-policy. Use `docs/full_length/` for protein-level LLPS and DPR documentation.
+policy. Use `docs/protein/` for protein-level LLPS and DPR documentation.

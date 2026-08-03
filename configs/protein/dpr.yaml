@@ -1,0 +1,97 @@
+# Protein DPR training configuration.
+# Download data and pretrained checkpoints from Hugging Face into artifacts/.
+
+paths:
+  v2_data_root: artifacts/derived/protein/dpr/base
+  packed_root: artifacts/derived/protein/dpr/packed
+  tier_manifest: artifacts/derived/protein/dpr/training/protein_tiers.parquet
+  official_phasepro_root: artifacts/derived/protein/dpr/evaluation/phasepro
+  output_root: runs/dpr
+  schedule_current: artifacts/data/protein/PhaseFlow-DPR/data/base_training_schedule.parquet
+  schedule_audit: runs/dpr/reports/base_training_schedule_audit.json
+  phaseflow_llps_checkpoint: artifacts/models/protein/llps/model.pt
+  phaseflow_checkpoint: artifacts/models/protein/phaseflow/model.pt
+
+input_representation:
+  policy: historical_cached_hidden
+  packed_sidecar_key: phaseflow_llps_hidden
+
+run:
+  seed: 20260616
+  precision: bf16
+  world_size: 8
+  per_rank_batch_proteins: 1
+  num_workers: 2
+  prefetch_factor: 2
+  log_every: 50
+
+model:
+  esm2_dim: 1280
+  biophys_dim: 112
+  phaseflow_llps_hidden_dim: 256
+  phaseflow_hidden_dim: 256
+  phaseflow_shape: 4x4
+  phaseflow_bridge_tokens: 32
+  phaseflow_bridge_adapter_layers: 2
+  phaseflow_bridge_gate_init: 0.075
+  num_heads: 8
+  adapter_dim: 256
+  dropout: 0.1
+  window_sizes: [33, 129, 257]
+  topk_fraction: 0.05
+  leaky_relu_slope: 0.01
+  head_type: big
+  use_base_streams: true
+  use_phaseflow_llps_stream: true
+  use_phaseflow_stream: true
+
+loss:
+  objective: mflat
+  bag: 1.0
+  topk: 0.25
+  s_bce: 1.0
+  s_dice: 0.3
+  s_rank: 0.5
+  w_bce: 0.25
+  w_rank: 0.15
+  m_peak: 0.2
+  boundary_radius: 17
+  topk_fraction: 0.05
+
+optimizer:
+  type: AdamW
+  lr: 0.0003
+  weight_decay: 0.0001
+  gradient_clip_norm: 1.0
+
+scheduler:
+  type: warmup_cosine
+  total_updates: 4000
+  warmup_updates: 0
+  min_lr_ratio: 0.1
+
+ema:
+  decay: 0.997
+
+checkpoint:
+  save_updates: [250, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000]
+
+refinement:
+  stages: [plan_d, plan_c_strong, plan_c_ranking]
+  updates: [75, 50, 50]
+  reference_metrics:
+    phasepro:
+      auprc: 0.7122562774232589
+      auroc: 0.6661332075361822
+      spearman: 0.28664546828133614
+
+reproduction:
+  benchmark:
+    phasepro:
+      checkpoint_sha256: 7fb0091e6dd5a85bd3a6be7a0b606501700c4b8f28ff9b6e309267835a2fdff0
+      checkpoint_variant: raw
+      precision: bf16
+      tolerance: 1.0e-6
+
+arms:
+  dpr: {}

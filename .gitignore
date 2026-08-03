@@ -60,8 +60,8 @@ artifacts/data/**
 !artifacts/data/README.md
 !artifacts/data/peptide/
 !artifacts/data/peptide/README.md
-!artifacts/data/full_length/
-!artifacts/data/full_length/README.md
+!artifacts/data/protein/
+!artifacts/data/protein/README.md
 artifacts/derived/**
 !artifacts/derived/
 !artifacts/derived/README.md
@@ -72,10 +72,15 @@ artifacts/models/**
 
 # Retired root artifact locations
 data/
-!scripts/full_length/data/
-!scripts/full_length/data/*.py
 models/
 results/
+!artifacts/data/
+!artifacts/data/protein/
+!artifacts/data/protein/README.md
+!artifacts/results/
+!artifacts/results/**
+# Keep generated run logs local while versioning curated result figures and tables.
+artifacts/results/**/*.log
 archive/
 experiments/
 analyses/
@@ -118,3 +123,5 @@ configs/local*.yaml
 htmlcov/
 
 .tmp/
+
+docs/superpowers/

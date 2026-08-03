@@ -31,7 +31,7 @@ echo "GPU ID:     $GPU_ID"
 echo "========================================"
 
 cd "$PROJECT_DIR"
-python research/peptide/experiments/predict_seq2phase.py \
+python scripts/peptide/workflows/predict_seq2phase.py \
     --checkpoint "$CHECKPOINT" \
     --input_file "$INPUT_FILE" \
     --output "$OUTPUT_FILE" \

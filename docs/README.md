@@ -6,7 +6,7 @@ and training entry points.
 | Workflow | Documentation | Scope |
 | --- | --- | --- |
 | Short peptides | [Peptide workflow](peptide/README.md) | Bidirectional sequence-to-phase-diagram modeling and peptide generation |
-| Full-length proteins | [Full-length workflow](full_length/README.md) | Protein-level LLPS prediction and residue-level DPR prediction |
+| Proteins | [Protein workflow](protein/README.md) | Protein-level LLPS prediction and residue-level DPR prediction |
 
 Start with the repository [README](../README.md) for installation and the
 artifact-release policy. The workflow guides explain their inputs, training

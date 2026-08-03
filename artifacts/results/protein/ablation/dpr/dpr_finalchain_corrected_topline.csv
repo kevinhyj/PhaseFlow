@@ -1,0 +1,17 @@
+rank,arm_id,bitmask,label,selected_variant,pland_threshold,phasepro_p257_AUPRC,phasepro_p257_AUROC,phasepro_p257_Spearman,phasepro_p257_fixed_0.5_F1,phasepro_p257_fixed_0.5_MCC
+1,s1011_no_biophys,1011,去掉 biophys,raw,0.591251,0.717023,0.673985,0.300191,0.579240,0.225098
+2,s1111_full_retrain,1111,full 完整重训对照,ema,0.296654,0.712708,0.666372,0.287057,0.630231,0.221556
+3,s1010_esm2_phaseflow_llps,1010,ESM2 + PhaseFlow LLPS direct,ema,0.446253,0.711889,0.672183,0.297083,0.621257,0.212594
+4,s0011_no_base_embedding,0011,去掉 ESM2 和 biophys,raw,0.288569,0.707356,0.673761,0.299807,0.647900,0.230352
+5,s1110_no_phaseflow_bridge,1110,去掉 PhaseFlow bridge,raw,0.299105,0.706323,0.664523,0.283866,0.632380,0.217227
+6,s0111_no_esm2,0111,去掉 ESM2,raw,0.195594,0.705400,0.677101,0.305571,0.654765,0.223886
+7,s0010_phaseflow_llps_only,0010,只保留直接拼接的 PhaseFlow LLPS,ema,0.459804,0.701567,0.676288,0.304165,0.620057,0.239333
+8,s0110_biophys_phaseflow_llps,0110,biophys + PhaseFlow LLPS direct,raw,0.218669,0.698866,0.674751,0.301516,0.645429,0.221410
+9,s1001_esm2_phaseflow_bridge,1001,ESM2 + PhaseFlow bridge,ema,0.762070,0.687882,0.619519,0.206216,0.272304,0.196186
+10,s1101_no_phaseflow_llps_direct,1101,去掉直接拼接的 PhaseFlow LLPS stream,ema,0.773216,0.687076,0.616441,0.200906,0.330614,0.223811
+11,s1000_esm2_only,1000,只保留 ESM2,raw,0.603932,0.675147,0.601335,0.174842,0.562748,0.144543
+12,s1100_base_only,1100,只保留 ESM2 和 biophys,raw,0.573201,0.670915,0.596495,0.166490,0.549593,0.135136
+13,s0100_biophys_only,0100,只保留 biophys,raw,0.540196,0.646843,0.588909,0.153402,0.552804,0.127444
+14,s0101_biophys_phaseflow_bridge,0101,biophys + PhaseFlow bridge,raw,0.637934,0.634983,0.596081,0.165777,0.506647,0.151689
+15,s0001_phaseflow_bridge_only,0001,只保留 PhaseFlow bridge,raw,0.709824,0.623230,0.575998,0.131135,0.425371,0.113533
+16,s0000_null_negative_control,0000,所有 DPR input stream 清零,ema,0.531088,0.548856,0.504804,0.010991,0.253556,0.056635

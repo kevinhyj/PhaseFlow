@@ -4,10 +4,10 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 DEFAULT_GPU=0
-DEFAULT_CONFIG="configs/peptide/default.yaml"
+DEFAULT_CONFIG="configs/peptide/peptide.yaml"
 DEFAULT_DATA_PATH="${PHASEFLOW_DATA_PATH:-${PROJECT_DIR}/artifacts/data/peptide/phase_diagram_original_scale.csv}"
 DEFAULT_OUTPUT_DIR="${PROJECT_DIR}/outputs"
-DEFAULT_MISSING_THRESHOLD="-1"
+DEFAULT_MISSING_THRESHOLD=""
 
 GPU_ID="$DEFAULT_GPU"
 CONFIG_FILE="$DEFAULT_CONFIG"
@@ -36,7 +36,7 @@ show_help() {
     echo "  -b, --batch N             Override batch size"
     echo "  -l, --lr FLOAT            Override learning rate"
     echo "  -e, --epochs N            Override epochs"
-    echo "  -t, --threshold N         Missing-value threshold (default: ${DEFAULT_MISSING_THRESHOLD})"
+    echo "  -t, --threshold N         Override data.missing_threshold from the YAML config"
     echo "      --foreground          Run in foreground instead of nohup background"
     echo "  -h, --help                Show this help"
     echo ""
@@ -145,9 +145,9 @@ TRAIN_ARGS=(
     --output_dir "$OUTPUT_DIR"
     --device cuda
     --seed 42
-    --missing_threshold "$MISSING_THRESHOLD"
 )
 
+[[ -n "$MISSING_THRESHOLD" ]] && TRAIN_ARGS+=(--missing_threshold "$MISSING_THRESHOLD")
 [[ -n "$VAL_PATH" ]] && TRAIN_ARGS+=(--val_path "$VAL_PATH")
 [[ -n "$TEST_PATH" ]] && TRAIN_ARGS+=(--test_path "$TEST_PATH")
 [[ -n "$BATCH_SIZE" ]] && TRAIN_ARGS+=(--batch_size "$BATCH_SIZE")
@@ -165,14 +165,14 @@ echo "Data:      $DATA_PATH"
 [[ -n "$TEST_PATH" ]] && echo "Test:      $TEST_PATH"
 echo "Output:    $OUTPUT_DIR"
 echo "Log:       $LOG_FILE"
-echo "Threshold: $MISSING_THRESHOLD"
+echo "Threshold: ${MISSING_THRESHOLD:-from YAML config}"
 echo "========================================"
 
 cd "$PROJECT_DIR"
 if "$FOREGROUND"; then
-    python -u research/peptide/experiments/train.py "${TRAIN_ARGS[@]}" 2>&1 | tee "$LOG_FILE"
+    python -u scripts/peptide/workflows/train.py "${TRAIN_ARGS[@]}" 2>&1 | tee "$LOG_FILE"
 else
-    nohup python -u research/peptide/experiments/train.py "${TRAIN_ARGS[@]}" >> "$LOG_FILE" 2>&1 &
+    nohup python -u scripts/peptide/workflows/train.py "${TRAIN_ARGS[@]}" >> "$LOG_FILE" 2>&1 &
     PID=$!
     echo "Training started in background"
     echo "PID: $PID"
