@@ -1,0 +1,107 @@
+{
+  "format": "phaseflow_protein_results_v1",
+  "source_archive_root": "release-source",
+  "normalization": "published tables use the PhaseFlow model identity and llps_score field name",
+  "files": [
+    {
+      "source": "ablation/dpr/reports/dpr_finalchain_corrected_topline.csv",
+      "destination": "artifacts/results/protein/ablation/dpr/dpr_finalchain_corrected_topline.csv",
+      "sha256": "691c2a7c77eb07d1d76f12cb9507988a1207134d33850725803aadcb692aa6eb",
+      "bytes": 2015
+    },
+    {
+      "source": "ablation/dpr/benchmarks/final_tables/dpr_stream_ablation_summary.csv",
+      "destination": "artifacts/results/protein/ablation/dpr/dpr_stream_ablation_summary.csv",
+      "source_sha256": "be0750a88ca55de2e1035a4d9dc29e7a9c0ec6081a9f76654ea0015b393fee46",
+      "transformation": "redact_nonrelease_references_and_normalize_published_identifiers",
+      "sha256": "18c88937154b4253c0063cd889f76fcb75f7ce6ce9c815c8c2d3b198d464b64e",
+      "bytes": 38153
+    },
+    {
+      "source": "ablation/llps/nature_main/reports/llps_ablation_summary_table.csv",
+      "destination": "artifacts/results/protein/ablation/llps/llps_ablation_summary_table.csv",
+      "sha256": "305efec3bc6ba42f82f119b21ff91b53126de7a99776ca7770f454faaaabc442",
+      "bytes": 911
+    },
+    {
+      "source": "ablation/llps/nature_main/reports/llps_embedding_ablation_bootstrap_ci.csv",
+      "destination": "artifacts/results/protein/ablation/llps/llps_embedding_ablation_bootstrap_ci.csv",
+      "sha256": "b6e2acf6ea980f34d3219ec3145285ccf1eea0975d40d44500000ac011efdddd",
+      "bytes": 6142
+    },
+    {
+      "source": "benchmarks/dpr/dpr_phasepro_region_metrics.csv",
+      "destination": "artifacts/results/protein/benchmark/dpr/dpr_phasepro_region_metrics.csv",
+      "sha256": "31b95e898196ab6c807c38fd6a5eeaff55ce934b29ad04424dbf5bbb31948eff",
+      "bytes": 1575
+    },
+    {
+      "source": "benchmarks/dpr/dpr_phasepro_residue_metrics.csv",
+      "destination": "artifacts/results/protein/benchmark/dpr/dpr_phasepro_residue_metrics.csv",
+      "sha256": "36c99cd9dac407779f1e30024a8c82beade67e350e92782d5f460b9e2d04906d",
+      "bytes": 818
+    },
+    {
+      "source": "benchmarks/dpr/dpr_requested_table.csv",
+      "destination": "artifacts/results/protein/benchmark/dpr/dpr_requested_table.csv",
+      "sha256": "3338ce4d69d390c19772a1cca3651d0fd6341dc3e4c18f9b1bcbdfae46e1d4ef",
+      "bytes": 2113
+    },
+    {
+      "source": "benchmarks/dpr/final_overall_benchmark_summary.json",
+      "destination": "artifacts/results/protein/benchmark/dpr/final_overall_benchmark_summary.json",
+      "source_sha256": "ad390d40e77725e613b4beafa8f40839f2ddae6efd1058f2a9ee2b4efdf4733f",
+      "transformation": "redact_nonrelease_references_and_normalize_published_identifiers",
+      "sha256": "78b5754ddc69e042f32073dd7f56ec5a83b158464ed68867ea9d69b5f79bfcdf",
+      "bytes": 15489
+    },
+    {
+      "source": "benchmarks/llps/llps_all_panel_metrics.csv",
+      "destination": "artifacts/results/protein/benchmark/llps/llps_all_panel_metrics.csv",
+      "sha256": "05fb3bbdfb21a40bad3d04ff711922a2e44551928a10c1a41a804cce2585763f",
+      "bytes": 14656
+    },
+    {
+      "source": "benchmarks/llps/llps_requested_table.csv",
+      "destination": "artifacts/results/protein/benchmark/llps/llps_requested_table.csv",
+      "sha256": "a86d734c0b590c88b79f6ad44f45e75dceb2846287485f56b5cc0cb9b74f72d9",
+      "bytes": 1558
+    },
+    {
+      "source": "paper/protein/figures/ablation/fig05_llps_key_metrics.png",
+      "destination": "artifacts/results/protein/figures/ablation/fig05_llps_key_metrics.png",
+      "sha256": "0080ee1be105c4c1e1f63429e00dfb91ffc98818322d3bd79732fc818a59d8d3",
+      "bytes": 300174
+    },
+    {
+      "source": "paper/protein/figures/ablation/fig06_dpr_ablation_summary.png",
+      "destination": "artifacts/results/protein/figures/ablation/fig06_dpr_ablation_summary.png",
+      "sha256": "438190f60a44c0b7c8edce5683fb43b210490b2c69e3a3d5f622b4aa563d4acc",
+      "bytes": 270285
+    },
+    {
+      "source": "paper/protein/figures/ablation/fig06_dpr_stream_ablation.png",
+      "destination": "artifacts/results/protein/figures/ablation/fig06_dpr_stream_ablation.png",
+      "sha256": "c5854ee200c783f1e0e89a402af20ade04675d2b72ba36e365f1360d106ca479",
+      "bytes": 209922
+    },
+    {
+      "source": "paper/protein/figures/benchmark/fig01_dpr_benchmark.png",
+      "destination": "artifacts/results/protein/figures/benchmark/fig01_dpr_benchmark.png",
+      "sha256": "1ad0faf6eaed1c34df918ff1b6d57bbcdbfe85ece0e071900e0549b4c82169ee",
+      "bytes": 323943
+    },
+    {
+      "source": "paper/protein/figures/benchmark/fig01_llps_benchmark.png",
+      "destination": "artifacts/results/protein/figures/benchmark/fig01_llps_benchmark.png",
+      "sha256": "e23e950115af686ea41dc684578eb7cb57b489418f8667641d2423112365312e",
+      "bytes": 409755
+    },
+    {
+      "source": "paper/protein/figures/benchmark/fig02_phasepro_dpr_top12.png",
+      "destination": "artifacts/results/protein/figures/benchmark/fig02_phasepro_dpr_top12.png",
+      "sha256": "a1849fe49201d378d24762b1500e33ceb394c3e70b3d86c8f875bc6527ed07aa",
+      "bytes": 451256
+    }
+  ]
+}

@@ -75,7 +75,7 @@ while [ $i -lt $TOTAL ]; do
 
         echo "  Launch: ${cfg_name} -> GPU ${gpu}"
 
-        CUDA_VISIBLE_DEVICES=$gpu python -u research/peptide/experiments/train.py \
+        CUDA_VISIBLE_DEVICES=$gpu python -u scripts/peptide/workflows/train.py \
             --config "configs/peptide/${cfg}" \
             --data_path "$DATA_PATH" \
             --output_dir outputs_ddpm \

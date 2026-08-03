@@ -1,6 +1,6 @@
 # Peptide Data Loading
 
-`phaseflow.data.PhaseDataset` loads peptide sequences and their 4x4 PSSI phase
+`phaseflow.peptide.data.PhaseDataset` loads peptide sequences and their 4x4 PSSI phase
 diagrams. This document describes its input contract, split behavior, missing
 value semantics, and practical performance options.
 

@@ -16,8 +16,8 @@ not experimental measurements or design guarantees.
 | Tokenizer | `phaseflow/tokenizer.py` | Encodes standard amino acids and control tokens |
 | Dataset | `phaseflow/data.py` | Loads sequences, PSSI values, masks, and train/validation/test splits |
 | Model | `phaseflow/model.py` | Shared Transformer, phase encoder, Flow Matching or DDPM head, and LM head |
-| Trainer | `research/peptide/experiments/train.py` | Optimization, checkpointing, metrics, and learning-curve exports |
-| Predictor | `research/peptide/experiments/predict_seq2phase.py` | Batched sequence-to-phase inference |
+| Trainer | `scripts/peptide/workflows/train.py` | Optimization, checkpointing, metrics, and learning-curve exports |
+| Predictor | `scripts/peptide/workflows/predict_seq2phase.py` | Batched sequence-to-phase inference |
 
 ## Modeling Directions
 
