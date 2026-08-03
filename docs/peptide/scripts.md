@@ -1,15 +1,15 @@
 # Peptide Script Reference
 
-Shell launchers in `scripts/peptide/` are convenience wrappers around Python
-entry points in `research/peptide/experiments/`. They resolve repository-relative
-paths, set `PYTHONPATH`, and expose common options. Use the Python entry points
-directly when integrating PhaseFlow into another workflow.
+Shell launchers in `scripts/peptide/` are convenience wrappers around the
+installed PhaseFlow package. They resolve repository-relative paths and expose
+common options. Review the launcher arguments before using them in a recorded
+experiment.
 
 ## Training
 
 ```bash
 bash scripts/peptide/train.sh \
-  --config configs/peptide/default.yaml \
+  --config configs/peptide/peptide.yaml \
   --data artifacts/data/peptide/phase_diagram_original_scale.csv \
   --val path/to/validation.csv \
   --test path/to/test.csv \
@@ -48,7 +48,7 @@ bash scripts/peptide/infer.sh \
 ```
 
 The underlying entry point is
-`research/peptide/experiments/predict_seq2phase.py`. It accepts text or CSV
+`scripts/peptide/workflows/predict_seq2phase.py`. It accepts text or CSV
 sequence inputs and writes a CSV prediction table.
 
 ## Experiment Launchers
@@ -62,3 +62,28 @@ The remaining shell scripts launch predefined sweeps:
 
 Review every shell script before use. Sweep scripts are research conveniences;
 they do not replace a recorded experimental protocol.
+
+## Mutation Figures
+
+The mutation figure generators accept explicit, tabular inputs and write PNG,
+PDF, SVG, and the exact plot-data CSV used to render each figure.
+
+```bash
+python scripts/peptide/figures/mutation/plot_mutation_metrics.py \
+  --input artifacts/results/peptide/mutation_metrics.csv \
+  --output-dir runs/figures/mutation_metrics
+
+python scripts/peptide/figures/mutation/plot_mutation_scatter.py \
+  --input artifacts/results/peptide/mutation_effects.csv \
+  --output-dir runs/figures/mutation_scatter
+
+python scripts/peptide/figures/mutation/plot_multi_mutation_dose.py \
+  --input artifacts/results/peptide/multi_mutation_scores.csv \
+  --output-dir runs/figures/multi_mutation_dose
+```
+
+`plot_mutation_metrics.py` requires `model`, `mean_auroc`, and `mean_auprc`.
+`plot_mutation_scatter.py` requires `experimental_effect` plus the documented
+comparator score columns.
+`plot_multi_mutation_dose.py` requires `mutation`, `mutation_count`, and
+`official_score`.

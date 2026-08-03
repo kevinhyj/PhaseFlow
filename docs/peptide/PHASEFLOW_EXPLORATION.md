@@ -6,7 +6,7 @@ paths, transient runs, and unversioned results.
 
 ## Start From A Baseline
 
-Copy `configs/peptide/default.yaml` into a dedicated experiment directory.
+Copy `configs/peptide/peptide.yaml` into a dedicated experiment directory.
 Change one hypothesis at a time, such as the phase encoder, diffusion mode,
 loss weighting, or model width. Do not overwrite the canonical baseline.
 

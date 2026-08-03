@@ -5,9 +5,9 @@ an amino-acid sequence and a 4x4 phase-separation score index (PSSI) diagram.
 It supports sequence-to-phase prediction with Flow Matching or DDPM, and
 phase-conditioned peptide generation with a causal language-model objective.
 
-This workflow is separate from the full-length LLPS and DPR pipeline. Its
+This workflow is separate from the protein LLPS and DPR pipeline. Its
 public implementation lives in `phaseflow/`, while training and evaluation
-entry points live in `research/peptide/experiments/`.
+entry points live in `scripts/peptide/workflows/`.
 
 ## Quick Start
 
@@ -22,13 +22,13 @@ Place a peptide source table outside Git, for example at
 
 ```bash
 bash scripts/peptide/train.sh \
-  --config configs/peptide/default.yaml \
+  --config configs/peptide/peptide.yaml \
   --data artifacts/data/peptide/phase_diagram_original_scale.csv \
   --foreground
 ```
 
 The launcher creates a time-stamped log and delegates optimization to
-`research/peptide/experiments/train.py`. Pass `--help` to the launcher for all
+`scripts/peptide/workflows/train.py`. Pass `--help` to the launcher for all
 available overrides.
 
 ## Data Contract
@@ -51,14 +51,14 @@ NPZ is an optional performance cache, not a source-of-truth replacement.
 
 ## Training
 
-The canonical baseline is `configs/peptide/default.yaml`. It defines model,
+The canonical baseline is `configs/peptide/peptide.yaml`. It defines model,
 training, sampling, and split defaults. Explicit validation and test tables can
 be supplied with `--val` and `--test`; otherwise the Python trainer makes a
 deterministic train/validation/test split according to the configuration.
 
 ```bash
-python research/peptide/experiments/train.py \
-  --config configs/peptide/default.yaml \
+python scripts/peptide/workflows/train.py \
+  --config configs/peptide/peptide.yaml \
   --data_path artifacts/data/peptide/phase_diagram_original_scale.csv \
   --output_dir runs/peptide \
   --device cuda
@@ -73,7 +73,7 @@ Prepare a text file with one sequence per line, or a CSV containing the
 configured sequence column, then run:
 
 ```bash
-python research/peptide/experiments/predict_seq2phase.py \
+python scripts/peptide/workflows/predict_seq2phase.py \
   --checkpoint artifacts/models/peptide/model.pt \
   --input_file examples/sequences.txt \
   --output runs/peptide/predicted_phases.csv \

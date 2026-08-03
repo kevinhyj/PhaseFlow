@@ -1,0 +1,46 @@
+model:
+  dim: 256
+  depth: 6
+  heads: 8
+  dim_head: 32
+  vocab_size: 32
+  phase_dim: 16
+  max_seq_len: 32
+  dropout: 0.1
+  use_set_encoder: false
+  diffusion_type: flow_matching
+  num_timesteps: 1000
+  beta_schedule: cosine
+  use_ot_coupling: false
+  use_quadratic_weighting: true
+
+training:
+  batch_size: 2048
+  lr: 0.0008
+  weight_decay: 0.01
+  epochs: 200
+  warmup_steps: 1000
+  flow_loss_weight: 32.0
+  lm_loss_weight: 0.0
+  max_grad_norm: 1.0
+  use_amp: true
+  early_stopping_patience: 20
+  save_every: 20
+
+sampling:
+  method: euler
+  ode_steps: 20
+  sampling_steps: 50
+  use_ddim: true
+  temperature: 1.0
+
+data:
+  # The best source experiment used the complete data range. This value is
+  # read by the peptide training workflow unless --threshold overrides it.
+  missing_threshold: 15
+  train_ratio: 0.9
+  val_ratio: 0.05
+  num_workers: 4
+  # Optional explicit splits. Leave null to split from --data_path.
+  val_path: null
+  test_path: null

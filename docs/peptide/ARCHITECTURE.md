@@ -1,6 +1,6 @@
 # Short-Peptide Architecture
 
-The peptide model is implemented by `phaseflow.model.PhaseFlow`. It combines a
+The peptide model is implemented by `phaseflow.peptide.model.PhaseFlow`. It combines a
 shared causal Transformer backbone with two task-specific objectives: a
 continuous phase-diagram objective and next-token prediction.
 
@@ -66,6 +66,6 @@ maximum length is reached.
 | `training.flow_loss_weight` | Weight applied to the phase-generation loss |
 | `training.lm_loss_weight` | Weight applied to the language-model loss |
 
-See `configs/peptide/default.yaml` for an executable baseline. Changes to
+See `configs/peptide/peptide.yaml` for an executable baseline. Changes to
 model dimensions, tokenization, or phase dimension invalidate checkpoint
 compatibility and should be treated as a new experimental configuration.

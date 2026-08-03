@@ -7,8 +7,8 @@
 <div align="center">
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![Models](https://img.shields.io/badge/Models-Hugging%20Face%20pending-lightgrey)
-![Datasets](https://img.shields.io/badge/Datasets-Hugging%20Face%20pending-lightgrey)
+![Models](https://img.shields.io/badge/Models-not%20yet%20released-lightgrey)
+![Datasets](https://img.shields.io/badge/Datasets-Hugging%20Face-blue)
 ![License](https://img.shields.io/badge/License-Apache--2.0-blue)
 
 </div>
@@ -35,9 +35,9 @@ then use those learned mappings for prediction, localization, and design.
 | Peptide sequence tokens | Sequence-to-phase prediction and phase-conditioned sequence generation |
 | 4x4 PSSI phase diagrams | Compact representation of phase-separation score landscapes |
 | Flow Matching and causal language modeling | Fast phase-diagram regression and target-conditioned peptide design |
-| Full-length residue context | Protein-level LLPS prediction and residue-level DPR scanning |
-| ESM2, physicochemical, disorder, structure, graph, and local-context features | Multi-modal protein representations for full-length tasks |
-| Ordered bridge tokens | Transfer short-peptide sequence-phase knowledge into full-length protein modeling |
+| Protein residue context | Protein-level LLPS prediction and residue-level DPR scanning |
+| ESM2, physicochemical, disorder, structure, graph, and local-context features | Multi-modal protein representations for protein tasks |
+| Ordered bridge tokens | Transfer short-peptide sequence-phase knowledge into protein modeling |
 
 ## Application
 
@@ -47,7 +47,7 @@ then use those learned mappings for prediction, localization, and design.
 
 PhaseFlow supports a connected set of phase-separation applications: designing
 peptide sequences from target phase diagrams, predicting phase diagrams from
-candidate sequences, scanning full-length proteins for LLPS-driving regions,
+candidate sequences, scanning proteins for LLPS-driving regions,
 and estimating mutation effects on phase-separation behavior. These workflows
 share the same sequence-phase modeling foundation while exposing outputs that
 map naturally to peptide design, protein annotation, and mutagenesis analysis.
@@ -67,13 +67,13 @@ PSSI diagram. For phase-to-sequence design, the same architecture conditions on
 the target phase diagram and uses causal language modeling to generate peptide
 sequences.
 
-### Full-Length Protein LLPS And DPR Model
+### Protein LLPS And DPR Model
 
 <p align="center">
-  <img src="figures/full_length/structure-full-length.svg" alt="Full-length PhaseFlow architecture" width="960">
+  <img src="figures/protein/architecture.svg" alt="Protein PhaseFlow architecture" width="960">
 </p>
 
-The full-length module handles protein-scale context separately from the
+The protein module handles protein-scale context separately from the
 short-peptide task. It combines residue-level ESM2, physicochemical, disorder,
 structure-derived, graph, and local-context features, then bridges peptide
 sequence-phase knowledge through ordered bridge tokens and residue-query
@@ -95,7 +95,7 @@ You should consider PhaseFlow when your phase-separation workflow needs:
   <tr>
     <td align="center">🧪</td>
     <td><b>Multi-scale LLPS modeling</b></td>
-    <td>Covers short-peptide phase diagrams, full-length protein LLPS, DPR localization, and mutation-effect scoring.</td>
+    <td>Covers short-peptide phase diagrams, protein LLPS, DPR localization, and mutation-effect scoring.</td>
   </tr>
   <tr>
     <td align="center">🔁</td>
@@ -109,13 +109,13 @@ You should consider PhaseFlow when your phase-separation workflow needs:
   </tr>
   <tr>
     <td align="center">🔎</td>
-    <td><b>Full-length LLPS and DPR scanning</b></td>
+    <td><b>Protein LLPS and DPR scanning</b></td>
     <td>Predicts protein-level LLPS propensity and localizes droplet-promoting regions from residue context.</td>
   </tr>
   <tr>
     <td align="center">🌉</td>
     <td><b>Staged transfer bridge</b></td>
-    <td>Transfers short-peptide sequence-phase knowledge to full-length proteins through 32 ordered bridge tokens.</td>
+    <td>Transfers short-peptide sequence-phase knowledge to proteins through 32 ordered bridge tokens.</td>
   </tr>
   <tr>
     <td align="center">🧫</td>
@@ -141,12 +141,12 @@ You should consider PhaseFlow when your phase-separation workflow needs:
 The values below are summarized from the tracked configs, audit reports, and
 figure artifacts in this repository. They are included to make the README
 useful as a project entry point; detailed provenance remains in
-`configs/full_length/` and `docs/full_length/`.
+`configs/protein/` and `docs/protein/`.
 
 | Task | Evaluation setting | PhaseFlow result |
 | --- | --- | --- |
-| Full-length LLPS | PPMC full panel | AUPRC 0.752, AUROC 0.874 |
-| Full-length LLPS | threshold 0.5 | MCC 0.549, F1 0.676 |
+| Protein LLPS | PPMC full panel | AUPRC 0.752, AUROC 0.874 |
+| Protein LLPS | threshold 0.5 | MCC 0.549, F1 0.676 |
 | Peptide phase prediction | complete held-out peptide diagrams | Spearman 0.4168, Pearson 0.4219, MSE 0.5652 |
 | Flow Matching vs DDPM | matched peptide phase-grid comparison | mean Spearman 0.559 vs 0.277; MSE 0.570 vs 1.315 |
 | DPR localization | PhasePro, p257 readout | residue AUPRC 0.712, top-5 enrichment 1.813 |
@@ -160,13 +160,13 @@ useful as a project entry point; detailed provenance remains in
 | Module | Path | Description |
 | --- | --- | --- |
 | Peptide core package | `phaseflow/` | Tokenizer, peptide Transformer, Flow Matching/DDPM model, utilities |
-| Full-length package | `phaseflow/full_length/` | Full-length data loading, feature builders, LLPS/DPR models, losses, metrics, inference helpers |
+| Protein package | `phaseflow/protein/` | Protein model structure, data contracts, reusable feature/structure functions, objectives, metrics, and post-processing |
 | Peptide configs | `configs/peptide/` | Lightweight peptide training defaults |
-| Full-length configs | `configs/full_length/` | LLPS and DPR training configurations |
+| Protein configs | `configs/protein/` | LLPS and DPR training configurations |
 | Peptide scripts | `scripts/peptide/` | Training, inference, resume, and experiment launchers |
-| Full-length scripts | `scripts/full_length/` | Data construction, teacher wrappers, training, evaluation, and benchmark utilities |
+| Protein scripts | `scripts/protein/` | Reproduction workflows for data construction, training, evaluation, release validation, and benchmark utilities |
 | Examples | `examples/` | Small peptide demo inputs and phase-to-sequence example |
-| Tests | `tests/` | Peptide smoke tests and focused full-length tests |
+| Tests | `tests/` | Peptide smoke tests and focused protein tests |
 | Figures | `figures/` | Curated README and paper-result figures |
 | Research workflows | `research/` | Short-peptide experiments and analysis scripts |
 | Local artifacts | `artifacts/` | Placeholder for local datasets, model downloads, and curated result artifacts |
@@ -189,7 +189,7 @@ useful as a project entry point; detailed provenance remains in
 - [Repository Layout](#repository-layout)
 - [Models And Datasets](#models-and-datasets)
 - [Short-Peptide Usage](#short-peptide-usage)
-- [Full-Length Usage](#full-length-usage)
+- [Protein Usage](#protein-usage)
 - [Evaluation And Checks](#evaluation-and-checks)
 - [Input And Output Formats](#input-and-output-formats)
 - [Artifact Policy](#artifact-policy)
@@ -216,13 +216,10 @@ python -m pip install -e .
 python -c "import phaseflow; print(phaseflow.__version__)"
 ```
 
-Download models and datasets after the Hugging Face release:
+Download the public training data:
 
 ```bash
-huggingface-cli download <org/phaseflow-peptide-model> \
-  --local-dir artifacts/models/peptide
-
-huggingface-cli download <org/phaseflow-peptide-data> \
+huggingface-cli download yanjiehuang/PhaseFlow_training_data \
   --repo-type dataset \
   --local-dir artifacts/data/peptide
 ```
@@ -237,8 +234,11 @@ bash scripts/peptide/infer.sh \
   0
 ```
 
-The Hugging Face repository names above are placeholders until the public
-artifact release is finalized.
+The training data are hosted at
+[`yanjiehuang/PhaseFlow_training_data`](https://huggingface.co/datasets/yanjiehuang/PhaseFlow_training_data).
+Pretrained checkpoints are not yet distributed; train a model locally or place
+an independently obtained checkpoint under `artifacts/models/` before running
+inference examples.
 
 ## Installation
 
@@ -250,10 +250,10 @@ conda activate phaseflow
 python -m pip install -e .
 ```
 
-Install optional full-length and test dependencies:
+Install optional protein and test dependencies:
 
 ```bash
-python -m pip install -e ".[full_length,test]"
+python -m pip install -e ".[protein,test]"
 ```
 
 Install optional feature-generation dependencies:
@@ -263,27 +263,31 @@ python -m pip install -e ".[plm,starling]"
 ```
 
 The default source install is intended for code reuse, peptide workflows, and
-lightweight checks. Full-length reproduction requires external data, feature
+lightweight checks. Protein reproduction requires external data, feature
 stores, and model checkpoints that are not committed to Git.
 
 ## Repository Layout
 
 ```text
-phaseflow/                 Short-peptide package and full_length subpackage
-phaseflow/full_length/     Full-length LLPS, DPR, feature, metric, and training code
+phaseflow/                 Peptide and protein packages
+phaseflow/protein/         Protein model structure and reusable core components
 configs/peptide/           Short-peptide configs
-configs/full_length/       Full-length LLPS and DPR configs
+configs/protein/       Protein LLPS and DPR configs
 docs/peptide/              Short-peptide documentation
-docs/full_length/          Full-length documentation and audit reports
+docs/protein/          Protein documentation and audit reports
 scripts/peptide/           Short-peptide training and inference launchers
-scripts/full_length/       Full-length data, training, evaluation, and teacher scripts
+scripts/protein/       Protein reproduction workflows and command adapters
+scripts/protein/analysis/      Protein benchmark and threshold analyses
+scripts/protein/inference/     Standalone protein DPR inference
 tests/peptide/             Short-peptide smoke tests
-tests/full_length/         Full-length focused tests
+tests/protein/         Protein focused tests
 examples/                  Short-peptide demo inputs
-research/peptide/experiments/  Short-peptide training/evaluation entry points
-research/peptide/analyses/     Short-peptide analysis scripts and curated outputs
+scripts/peptide/workflows/     Short-peptide training, inference, and evaluation entry points
+scripts/peptide/analysis/      Short-peptide analysis scripts
+artifacts/results/peptide/     Curated short-peptide analysis outputs
+artifacts/results/protein/     Protein publication results and renderers
 figures/peptide/           Short-peptide figures
-figures/full_length/       Full-length LLPS/DPR figures
+figures/protein/       Protein LLPS/DPR figures
 artifacts/data/            Local datasets and generated feature stores
 artifacts/models/          Local model checkpoints downloaded from Hugging Face
 artifacts/results/         Lightweight curated result artifacts
@@ -298,38 +302,28 @@ Suggested local layout:
 ```text
 artifacts/data/
   peptide/                 Phase-diagram CSV/NPZ data and split files
-  full_length/             Manifests, feature stores, benchmark inputs
+  protein/                 Manifests, feature stores, benchmark inputs
 artifacts/models/
   peptide/                 Short-peptide PhaseFlow checkpoints
-  full_length/
-    llps/                  Full-length LLPS checkpoints
-    dpr/                   Full-length DPR checkpoints
+  protein/
+    llps/                  Protein LLPS checkpoints
+    dpr/                   Protein DPR checkpoints
 ```
 
-Planned download pattern after release:
+Public peptide training-data download:
 
 ```bash
-huggingface-cli download <org/phaseflow-peptide-data> \
+huggingface-cli download yanjiehuang/PhaseFlow_training_data \
   --repo-type dataset \
   --local-dir artifacts/data/peptide
-
-huggingface-cli download <org/phaseflow-full-length-data> \
-  --repo-type dataset \
-  --local-dir artifacts/data/full_length
-
-huggingface-cli download <org/phaseflow-peptide-model> \
-  --local-dir artifacts/models/peptide
-
-huggingface-cli download <org/phaseflow-full-length-models> \
-  --local-dir artifacts/models/full_length
 ```
 
 | Resource | Local target | Status |
 | --- | --- | --- |
-| Peptide phase-diagram data | `artifacts/data/peptide/` | Hugging Face release pending |
-| Full-length feature/data bundle | `artifacts/data/full_length/` | Hugging Face release pending |
-| Peptide model checkpoint | `artifacts/models/peptide/` | Hugging Face release pending |
-| Full-length LLPS and DPR checkpoints | `artifacts/models/full_length/` | Hugging Face release pending |
+| Peptide training data | `artifacts/data/peptide/` | [Available on Hugging Face](https://huggingface.co/datasets/yanjiehuang/PhaseFlow_training_data) |
+| Protein feature/data bundle | `artifacts/data/protein/` | Not yet released |
+| Peptide model checkpoint | `artifacts/models/peptide/` | Not yet released |
+| Protein LLPS and DPR checkpoints | `artifacts/models/protein/` | Not yet released |
 
 ## Short-Peptide Usage
 
@@ -337,7 +331,7 @@ huggingface-cli download <org/phaseflow-full-length-models> \
 
 ```bash
 bash scripts/peptide/train.sh \
-  --config configs/peptide/default.yaml \
+  --config configs/peptide/peptide.yaml \
   --data artifacts/data/peptide/phase_diagram_original_scale.csv \
   --output-dir outputs/peptide \
   --gpu 0 \
@@ -366,52 +360,52 @@ python examples/phase2seq_demo.py \
 ### Evaluate peptide models
 
 ```bash
-python research/peptide/experiments/evaluate_seq2phase.py \
+python scripts/peptide/workflows/evaluate_seq2phase.py \
   --test_path artifacts/data/peptide/test_set.csv \
   --models_dir outputs/peptide
 ```
 
-## Full-Length Usage
+## Protein Usage
 
-The full-length code is packaged under `phaseflow.full_length`. It expects
-downloaded model checkpoints and feature/data bundles under `artifacts/models/full_length/`
-and `artifacts/data/full_length/`.
+The protein code is packaged under `phaseflow.protein`. It expects
+downloaded model checkpoints and feature/data bundles under `artifacts/models/protein/`
+and `artifacts/data/protein/`.
 
-Full-length training configurations:
+Protein training configurations:
 
-- `configs/full_length/llps.yaml`
-- `configs/full_length/dpr.yaml`
+- `configs/protein/llps.yaml`
+- `configs/protein/dpr.yaml`
 
 ### IDR sliding-window peptide PhaseFlow helper
 
 ```bash
-python scripts/full_length/predict_idr_phaseflow.py \
-  --input artifacts/data/full_length/idr_sequences.xlsx \
+python scripts/protein/inference/predict_protein_dpr.py \
+  --input artifacts/data/protein/idr_sequences.xlsx \
   --checkpoint artifacts/models/peptide/best_model.pt \
-  --output artifacts/results/full_length/idr_phaseflow_profiles.jsonl \
-  --csv artifacts/results/full_length/idr_phaseflow_profiles.csv
+  --output runs/protein/idr_phaseflow_profiles.jsonl \
+  --csv runs/protein/idr_phaseflow_profiles.csv
 ```
 
 ### DPR training entry point
 
 ```bash
-torchrun --nproc_per_node=8 scripts/full_length/train_dpr.py \
-  --config configs/full_length/dpr.yaml \
+torchrun --nproc_per_node=8 scripts/protein/run.py train-dpr \
+  --config configs/protein/dpr.yaml \
   --arm dpr \
   --updates 50 \
   --output-root runs/dpr
 ```
 
-This command requires the full-length data package, reconstructed feature
+This command requires the protein data package, reconstructed feature
 stores, and checkpoints referenced by the config.
 
-### Full-length figures
+### Protein figures
 
 ```bash
-python scripts/full_length/figures/plot_llps_benchmark.py --help
-python scripts/full_length/figures/plot_dpr_benchmark.py --help
-python scripts/full_length/figures/plot_model_architecture.py \
-  --output-dir runs/figures/full_length
+python artifacts/results/protein/scripts/figures/plot_llps_benchmark.py --help
+python artifacts/results/protein/scripts/figures/plot_dpr_benchmark.py --help
+python artifacts/results/protein/scripts/figures/plot_model_architecture.py \
+  --output-dir runs/figures/protein
 ```
 
 ## Evaluation And Checks
@@ -419,15 +413,15 @@ python scripts/full_length/figures/plot_model_architecture.py \
 Short-peptide checks:
 
 ```bash
-python -m compileall phaseflow research/peptide/experiments research/peptide/analyses examples tests/peptide
+python -m compileall phaseflow scripts/peptide examples tests/peptide
 python -m unittest discover tests/peptide
 ```
 
-Full-length checks:
+Protein checks:
 
 ```bash
-python -m compileall phaseflow/full_length scripts/full_length tests/full_length
-python -m pytest tests/full_length/test_imports.py tests/full_length/test_phaseflow_fusion.py
+python -m compileall phaseflow/protein scripts/protein tests/protein
+python -m pytest tests/protein/test_imports.py tests/protein/test_phaseflow_fusion.py
 ```
 
 Install test dependencies if `pytest` is unavailable:
@@ -458,7 +452,7 @@ AminoAcidSequence,group_11,group_12,...,group_44
 ACDEFGHIKLMNPQRSTVWY,0.12,-0.08,...,0.31
 ```
 
-### Full-length IDR helper output
+### Protein IDR helper output
 
 The IDR helper writes JSONL profiles and an optional compact CSV:
 
@@ -474,8 +468,8 @@ training logs, or large runtime outputs.
 
 Local artifact paths:
 
-- `artifacts/data/peptide/` and `artifacts/data/full_length/` for datasets and feature stores.
-- `artifacts/models/peptide/` and `artifacts/models/full_length/` for Hugging Face model downloads.
+- `artifacts/data/peptide/` and `artifacts/data/protein/` for datasets and feature stores.
+- `artifacts/models/peptide/` and `artifacts/models/protein/` for Hugging Face model downloads.
 - `outputs/` and `logs/` for regenerated training or inference outputs.
 
 The repository `.gitignore` excludes common checkpoint formats such as `.pt`,
@@ -484,16 +478,16 @@ The repository `.gitignore` excludes common checkpoint formats such as `.pt`,
 
 ## Figures
 
-### Full-Length LLPS
+### Protein LLPS
 
 <table>
   <tr>
     <td align="center" width="50%">
-      <img src="figures/full_length/llps_benchmark.png" alt="Full-length LLPS benchmark" width="100%">
+      <img src="figures/protein/llps_benchmark.png" alt="Protein LLPS benchmark" width="100%">
       <br><i>Protein-level LLPS benchmark.</i>
     </td>
     <td align="center" width="50%">
-      <img src="figures/full_length/llps_ablation.png" alt="Full-length LLPS ablation" width="100%">
+      <img src="figures/protein/llps_ablation.png" alt="Protein LLPS ablation" width="100%">
       <br><i>Input-stream and weak-supervision ablations.</i>
     </td>
   </tr>
@@ -504,18 +498,18 @@ The repository `.gitignore` excludes common checkpoint formats such as `.pt`,
 <table>
   <tr>
     <td align="center" width="50%">
-      <img src="figures/full_length/dpr_benchmark.png" alt="DPR benchmark" width="100%">
+      <img src="figures/protein/dpr_benchmark.png" alt="DPR benchmark" width="100%">
       <br><i>Residue- and region-level DPR benchmark.</i>
     </td>
     <td align="center" width="50%">
-      <img src="figures/full_length/dpr_ablation.png" alt="DPR ablation" width="100%">
+      <img src="figures/protein/dpr_ablation.png" alt="DPR ablation" width="100%">
       <br><i>DPR scanner input and bridge ablations.</i>
     </td>
   </tr>
 </table>
 
 <p align="center">
-  <img src="figures/full_length/phasepro_dpr_12exp.png" alt="PhaSePro DPR examples" width="860">
+  <img src="figures/protein/phasepro_dpr_12exp.png" alt="PhaSePro DPR examples" width="860">
   <br><i>Representative DPR profiles on PhasePro proteins.</i>
 </p>
 
