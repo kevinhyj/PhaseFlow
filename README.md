@@ -7,7 +7,7 @@
 <div align="center">
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![Models](https://img.shields.io/badge/Models-not%20yet%20released-lightgrey)
+![Models](https://img.shields.io/badge/Models-Hugging%20Face-blue)
 ![Datasets](https://img.shields.io/badge/Datasets-Hugging%20Face-blue)
 ![License](https://img.shields.io/badge/License-Apache--2.0-blue)
 
@@ -216,12 +216,15 @@ python -m pip install -e .
 python -c "import phaseflow; print(phaseflow.__version__)"
 ```
 
-Download the public training data:
+Download the public training data and the combined runtime checkpoint:
 
 ```bash
 huggingface-cli download yanjiehuang/PhaseFlow_training_data \
   --repo-type dataset \
   --local-dir artifacts/data/peptide
+
+hf download yanjiehuang/PhaseFlow PhaseFlow.pt \
+  --local-dir artifacts/models
 ```
 
 Run peptide sequence-to-phase inference:
@@ -236,9 +239,10 @@ bash scripts/peptide/infer.sh \
 
 The training data are hosted at
 [`yanjiehuang/PhaseFlow_training_data`](https://huggingface.co/datasets/yanjiehuang/PhaseFlow_training_data).
-Pretrained checkpoints are not yet distributed; train a model locally or place
-an independently obtained checkpoint under `artifacts/models/` before running
-inference examples.
+The [combined PhaseFlow runtime checkpoint](https://huggingface.co/yanjiehuang/PhaseFlow)
+contains peptide, full-protein, and DPR weights. It is intended for the
+combined runtime; the standalone peptide scripts below still expect a
+peptide-only `best_model.pt` checkpoint.
 
 ## Installation
 
@@ -304,10 +308,8 @@ artifacts/data/
   peptide/                 Phase-diagram CSV/NPZ data and split files
   protein/                 Manifests, feature stores, benchmark inputs
 artifacts/models/
-  peptide/                 Short-peptide PhaseFlow checkpoints
-  protein/
-    llps/                  Protein LLPS checkpoints
-    dpr/                   Protein DPR checkpoints
+  PhaseFlow.pt             Combined peptide, full-protein, and DPR checkpoint
+  peptide/                 Optional standalone peptide-only checkpoints
 ```
 
 Public peptide training-data download:
@@ -316,14 +318,17 @@ Public peptide training-data download:
 huggingface-cli download yanjiehuang/PhaseFlow_training_data \
   --repo-type dataset \
   --local-dir artifacts/data/peptide
+
+hf download yanjiehuang/PhaseFlow PhaseFlow.pt \
+  --local-dir artifacts/models
 ```
 
 | Resource | Local target | Status |
 | --- | --- | --- |
 | Peptide training data | `artifacts/data/peptide/` | [Available on Hugging Face](https://huggingface.co/datasets/yanjiehuang/PhaseFlow_training_data) |
 | Protein feature/data bundle | `artifacts/data/protein/` | Not yet released |
-| Peptide model checkpoint | `artifacts/models/peptide/` | Not yet released |
-| Protein LLPS and DPR checkpoints | `artifacts/models/protein/` | Not yet released |
+| Combined peptide, full-protein, and DPR checkpoint | `artifacts/models/PhaseFlow.pt` | [Available on Hugging Face](https://huggingface.co/yanjiehuang/PhaseFlow) |
+| Standalone peptide-only checkpoint | `artifacts/models/peptide/` | Not yet released |
 
 ## Short-Peptide Usage
 
